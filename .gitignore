@@ -1,0 +1,19 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Mac 系统垃圾文件
+.DS_Store
+
+# 编译输出
+dist/
+build/
+
+# 环境变量
+.env
+
+# 个人配置
+.vscode/
