@@ -1,0 +1,37 @@
+{
+  "name": "saintgrid-pet-system",
+  "version": "1.0.0",
+  "description": "SaintGrid 神宠系统 - 基于四态汤圆皮肤的AI桌面助手",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ai",
+    "pet",
+    "desktop",
+    "assistant",
+    "typescript",
+    "saintgrid",
+    "tangyuan"
+  ],
+  "author": "SaintGrid Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saintgrid/pet-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/saintgrid/pet-system/issues"
+  },
+  "homepage": "https://github.com/saintgrid/pet-system#readme"
+}
