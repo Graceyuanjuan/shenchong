@@ -3,7 +3,7 @@
  * 展示四态切换和插件触发机制
  */
 
-import { SaintGridPetSystem, PetState, EmotionType } from './src';
+import { SaintGridPetSystem, PetState, EmotionType } from './index';
 
 /**
  * 状态机演示程序

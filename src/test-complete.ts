@@ -3,7 +3,7 @@
  * 测试状态机、插件触发、情绪引擎等所有增强功能
  */
 
-import { SaintGridPetSystem, PetState, EmotionType } from './src';
+import { SaintGridPetSystem, PetState, EmotionType } from './index';
 
 async function main() {
   console.log('🎭 ===== SaintGrid 神宠系统完整功能测试 =====\n');

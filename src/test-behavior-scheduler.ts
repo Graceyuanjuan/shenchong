@@ -3,8 +3,8 @@
  * 测试典型状态情绪组合的行为调度功能
  */
 
-import { BehaviorScheduler, BehaviorType } from './src/core/BehaviorScheduler';
-import { PetState, EmotionType, PluginContext } from './src/types';
+import { BehaviorScheduler, BehaviorType } from './core/BehaviorScheduler';
+import { PetState, EmotionType, PluginContext } from './types';
 
 /**
  * 测试辅助类
@@ -88,7 +88,7 @@ class BehaviorSchedulerTest {
         console.log(`  ${success ? '✅' : '❌'} ${testCase.state} + ${testCase.emotion}: ${result.executedBehaviors.length} 个行为`);
         
         if (result.executedBehaviors.length > 0) {
-          result.executedBehaviors.forEach(behavior => {
+          result.executedBehaviors.forEach((behavior: any) => {
             console.log(`    - ${behavior.type} (优先级: ${behavior.priority})`);
           });
         }
@@ -148,7 +148,7 @@ class BehaviorSchedulerTest {
       const endTime = Date.now();
       
       const executionTime = endTime - startTime;
-      const hasAsyncBehaviors = result.executedBehaviors.some(b => b.delay || b.duration);
+      const hasAsyncBehaviors = result.executedBehaviors.some((b: any) => b.delay || b.duration);
       
       console.log(`  ${result.success ? '✅' : '❌'} 异步行为执行 (耗时: ${executionTime}ms)`);
       console.log(`  ${hasAsyncBehaviors ? '✅' : '❌'} 包含异步行为定义`);
@@ -172,7 +172,7 @@ class BehaviorSchedulerTest {
       // 测试包含延时的状态情绪组合
       const result = await this.scheduler.schedule(PetState.Hover, EmotionType.Excited);
       
-      const hasDelayedBehaviors = result.executedBehaviors.some(b => b.delay && b.delay > 0);
+      const hasDelayedBehaviors = result.executedBehaviors.some((b: any) => b.delay && b.delay > 0);
       
       console.log(`  ${result.success ? '✅' : '❌'} 延时行为调度成功`);
       console.log(`  ${hasDelayedBehaviors ? '✅' : '❌'} 包含延时行为`);
@@ -233,7 +233,7 @@ class BehaviorSchedulerTest {
       // 测试自定义规则是否生效
       const result = await this.scheduler.schedule(PetState.Idle, EmotionType.Happy);
       
-      const hasCustomBehavior = result.executedBehaviors.some(b => 
+      const hasCustomBehavior = result.executedBehaviors.some((b: any) => 
         b.type === BehaviorType.USER_PROMPT && b.priority === 10
       );
       

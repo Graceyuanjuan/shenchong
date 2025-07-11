@@ -21,7 +21,9 @@
     "exactOptionalPropertyTypes": false,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-jsx",
+    "types": ["node"]
   },
   "include": [
     "src/**/*"
