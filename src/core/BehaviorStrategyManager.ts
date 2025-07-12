@@ -6,6 +6,8 @@
  */
 
 import { PetState, EmotionType, EmotionContext, PluginContext } from '../types';
+import { VisualFeedbackManager, VisualCueType } from './visual/VisualFeedbackManager';
+import { BehaviorRhythmManager } from './behavior/BehaviorRhythmManager';
 
 /**
  * 行为动作接口
@@ -90,9 +92,14 @@ export class BehaviorStrategyManager {
     timestamp: number;
   }> = [];
   private isProcessing: boolean = false;
+  
+  // T4-C: 视觉反馈管理器
+  private visualFeedbackManager?: VisualFeedbackManager;
+  private rhythmManager?: BehaviorRhythmManager;
 
   constructor() {
     this.loadDefaultStrategies();
+    this.initializeManagers();
     console.log('🎯 BehaviorStrategyManager initialized');
   }
 
@@ -739,10 +746,11 @@ export class BehaviorStrategyManager {
           });
           break;
         }
-      }
-
-      const duration = Date.now() - startTime;
+      }      const duration = Date.now() - startTime;
       this.updateExecutionStats(strategy.id, duration, results.every(r => r.success));
+      
+      // T4-C: 策略执行完成后触发视觉反馈
+      this.triggerStrategyVisualFeedback(strategy, context, results);
 
       console.log(`🎯 [策略执行] 策略执行完成: ${strategy.name} | 耗时: ${duration}ms | 成功动作: ${results.filter(r => r.success).length}/${results.length}`);
 
@@ -853,6 +861,160 @@ export class BehaviorStrategyManager {
     strategies.forEach(strategy => {
       this.registerStrategy(strategy);
     });
+  }
+
+  /**
+   * T4-C: 初始化管理器
+   */
+  private initializeManagers(): void {
+    // 初始化节奏管理器
+    this.rhythmManager = new BehaviorRhythmManager();
+    
+    // 初始化视觉反馈管理器
+    this.visualFeedbackManager = new VisualFeedbackManager();
+    
+    // 设置节奏管理器与视觉反馈管理器的双向绑定
+    if (this.rhythmManager && this.visualFeedbackManager) {
+      // 节奏管理器的行为反馈回调 -> 视觉反馈管理器
+      this.rhythmManager.onBehaviorFeedback((behaviorType, visualCue, context) => {
+        if (this.visualFeedbackManager) {
+          this.visualFeedbackManager.triggerVisualCue(visualCue, {
+            duration: 1000,
+            intensity: 'medium',
+            emotion: context?.context?.emotion
+          });
+        }
+      });
+
+      // 视觉反馈管理器的节奏同步回调 -> 节奏管理器
+      this.visualFeedbackManager.onRhythmSync((rhythmType, context) => {
+        if (this.rhythmManager) {
+          this.rhythmManager.changeRhythm(rhythmType, true);
+        }
+      });
+    }
+
+    console.log('🎨 [BehaviorStrategy] 视觉反馈和节奏管理器已初始化');
+  }
+
+  /**
+   * T4-C: 注册视觉反馈管理器
+   */
+  public registerVisualFeedbackManager(manager: VisualFeedbackManager): void {
+    this.visualFeedbackManager = manager;
+    
+    // 重新建立与节奏管理器的连接
+    if (this.rhythmManager) {
+      this.rhythmManager.onBehaviorFeedback((behaviorType, visualCue, context) => {
+        manager.triggerVisualCue(visualCue, {
+          duration: 1000,
+          intensity: 'medium',
+          emotion: context?.context?.emotion
+        });
+      });
+
+      manager.onRhythmSync((rhythmType, context) => {
+        if (this.rhythmManager) {
+          this.rhythmManager.changeRhythm(rhythmType, true);
+        }
+      });
+    }
+
+    console.log('🎨 [BehaviorStrategy] 外部视觉反馈管理器已注册');
+  }
+
+  /**
+   * T4-C: 注册节奏管理器
+   */
+  public registerRhythmManager(manager: BehaviorRhythmManager): void {
+    this.rhythmManager = manager;
+    
+    // 重新建立与视觉反馈管理器的连接
+    if (this.visualFeedbackManager) {
+      manager.onBehaviorFeedback((behaviorType, visualCue, context) => {
+        if (this.visualFeedbackManager) {
+          this.visualFeedbackManager.triggerVisualCue(visualCue, {
+            duration: 1000,
+            intensity: 'medium',
+            emotion: context?.context?.emotion
+          });
+        }
+      });
+
+      this.visualFeedbackManager.onRhythmSync((rhythmType, context) => {
+        manager.changeRhythm(rhythmType, true);
+      });
+    }
+
+    console.log('🎵 [BehaviorStrategy] 外部节奏管理器已注册');
+  }
+
+  /**
+   * T4-C: 策略执行时触发视觉反馈
+   */
+  private triggerStrategyVisualFeedback(
+    strategy: BehaviorStrategyRule, 
+    context: BehaviorExecutionContext, 
+    results: BehaviorActionResult[]
+  ): void {
+    if (!this.visualFeedbackManager || !this.rhythmManager) {
+      return;
+    }
+
+    // 根据策略类型和执行结果选择视觉反馈类型
+    let visualCue: VisualCueType = VisualCueType.IDLE_PULSE;
+    const isSuccess = results.every(r => r.success);
+
+    // 根据策略ID和情绪状态选择合适的视觉反馈
+    if (strategy.id.includes('curious') || strategy.id.includes('explore')) {
+      visualCue = VisualCueType.WAVE;
+    } else if (strategy.id.includes('excited') || strategy.id.includes('celebration')) {
+      visualCue = VisualCueType.BOUNCE;
+    } else if (strategy.id.includes('focused') || strategy.id.includes('control')) {
+      visualCue = VisualCueType.GLOW;
+    } else if (strategy.id.includes('happy') || strategy.id.includes('interaction')) {
+      visualCue = VisualCueType.SPIN;
+    } else if (strategy.id.includes('sleepy') || strategy.id.includes('rest')) {
+      visualCue = VisualCueType.FADE;
+    } else if (strategy.id.includes('calm')) {
+      visualCue = VisualCueType.IDLE_PULSE;
+    }
+
+    // 如果执行失败，使用震动效果
+    if (!isSuccess) {
+      visualCue = VisualCueType.SHAKE;
+    }
+
+    // 触发视觉反馈
+    this.visualFeedbackManager.triggerVisualCue(visualCue, {
+      duration: strategy.priority * 200, // 优先级越高，动画越长
+      intensity: isSuccess ? 'medium' : 'low',
+      emotion: context.emotion.currentEmotion,
+      metadata: {
+        strategyId: strategy.id,
+        strategyName: strategy.name,
+        executionResults: results
+      }
+    });
+
+    // 通知节奏管理器
+    if (this.rhythmManager) {
+      // 创建模拟的行为定义以便节奏管理器处理
+      const mockBehavior = {
+        type: strategy.actions[0]?.type || 'strategy_execution',
+        priority: strategy.priority,
+        duration: 1000,
+        message: strategy.name
+      };
+
+      this.rhythmManager.processBehavior(mockBehavior as any, {
+        state: context.state,
+        emotion: context.emotion.currentEmotion,
+        intensity: context.emotion.intensity
+      });
+    }
+
+    console.log(`🎨 [BehaviorStrategy] 视觉反馈已触发: ${visualCue} (策略: ${strategy.name})`);
   }
 }
 

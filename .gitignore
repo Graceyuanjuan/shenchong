@@ -17,3 +17,6 @@ build/
 
 # 个人配置
 .vscode/
+
+# 防止重复的测试文件
+src/ui/tests/test-visual-feedback.ts

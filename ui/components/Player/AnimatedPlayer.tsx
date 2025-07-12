@@ -107,7 +107,7 @@ export const AnimatedPlayer: React.FC<AnimatedPlayerProps> = ({
   const [seekPosition, setSeekPosition] = useState(0);
   
   // 引用
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number>(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   // 日志函数

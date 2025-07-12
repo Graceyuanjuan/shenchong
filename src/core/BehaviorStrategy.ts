@@ -598,3 +598,6 @@ export class StrategyManager {
     }));
   }
 }
+
+// 兼容性别名 - 为了与 UI 组件兼容
+export type BehaviorStrategy = IBehaviorStrategy;

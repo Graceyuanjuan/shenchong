@@ -8,7 +8,9 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "ai",
@@ -22,12 +24,19 @@
   "author": "SaintGrid Team",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.19.7",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "jest": "^30.0.4",
+    "jest-environment-jsdom": "^30.0.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "typescript": "^5.0.0"
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3"
   },
   "repository": {
     "type": "git",

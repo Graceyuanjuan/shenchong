@@ -5,6 +5,10 @@
 
 import { PetState, EmotionType, EmotionContext, PluginContext } from '../types';
 import { StrategyManager, StrategyContext, IBehaviorStrategy } from './BehaviorStrategy';
+import { BehaviorRhythmManager } from '../modules/rhythm/BehaviorRhythmManager';
+import { RhythmMode, type RhythmTickCallback } from '../types/BehaviorRhythm';
+
+type RhythmModeType = typeof RhythmMode[keyof typeof RhythmMode];
 
 // 行为类型定义
 export enum BehaviorType {
@@ -84,6 +88,7 @@ export class BehaviorScheduler {
   // 集成接口
   private emotionEngine?: any; // EmotionEngine实例
   private pluginRegistry?: any; // PluginRegistry实例
+  private rhythmManager?: BehaviorRhythmManager; // RhythmManager 实例
   private lastInteractionTimestamp: number = Date.now();
   
   constructor(emotionEngine?: any, pluginRegistry?: any) {
@@ -94,10 +99,14 @@ export class BehaviorScheduler {
     // 注入依赖
     this.emotionEngine = emotionEngine;
     this.pluginRegistry = pluginRegistry;
+    this.rhythmManager = new BehaviorRhythmManager();
     
     console.log(`🎯 BehaviorScheduler initialized with session: ${this.sessionId}`);
     if (emotionEngine) console.log(`🧠 EmotionEngine integrated`);
     if (pluginRegistry) console.log(`🔌 PluginRegistry integrated`);
+    
+    // 注册节奏回调
+    this.registerRhythmCallbacks();
   }
 
   /**
@@ -486,35 +495,39 @@ export class BehaviorScheduler {
 
     console.log(`🎯 [行为调度] 状态: ${state} | 情绪: ${emotion} | 强度: ${emotionContext.intensity?.toFixed(2)} | 会话: ${this.sessionId}`);
     
+    // 集成节奏控制 - 让行为执行与节拍同步
+    if (this.rhythmManager && this.rhythmManager.isActive()) {
+      const rhythmState = this.rhythmManager.getCurrentState();
+      console.log(`🎵 [节奏集成] 当前节奏: ${rhythmState.currentMode} | 间隔: ${rhythmState.currentInterval}ms`);
+      
+      // 根据情绪强度自适应节奏
+      if (rhythmState.currentMode === RhythmMode.ADAPTIVE) {
+        this.rhythmManager.adaptToEmotion(emotionContext.intensity);
+      }
+    }
+    
     try {
       // 使用策略系统生成行为
       const strategyBehaviors = this.strategyManager.generateBehaviors(strategyContext);
       
       // 如果策略系统没有生成行为，回退到传统规则系统
-      let allBehaviors = [...strategyBehaviors];
-      if (strategyBehaviors.length === 0) {
-        console.log(`📋 [行为调度] 策略系统无匹配行为，回退到传统规则`);
-        const fallbackBehaviors = this.getBehaviorRules(state, emotion);
-        allBehaviors = [...fallbackBehaviors];
-      }
+      const legacyBehaviors = strategyBehaviors.length === 0 ? 
+        this.findMatchingBehaviors(state, emotion, context) : [];
+      
+      const allBehaviors = [...strategyBehaviors, ...legacyBehaviors];
       
       if (allBehaviors.length === 0) {
-        console.log(`⚠️ [行为调度] 未找到任何可执行行为 | 状态: ${state} | 情绪: ${emotion}`);
+        console.warn(`⚠️ [行为调度] 未找到匹配的行为规则 | 状态: ${state} | 情绪: ${emotion}`);
         return {
           success: false,
           executedBehaviors: [],
           duration: Date.now() - startTime,
-          message: '未找到匹配的行为规则'
+          nextSchedule: this.calculateNextScheduleTime(state, emotion)
         };
       }
 
-      // 按优先级排序
-      const sortedBehaviors = allBehaviors.sort((a, b) => b.priority - a.priority);
-      console.log(`📋 [行为调度] 准备执行 ${sortedBehaviors.length} 个行为，优先级: [${sortedBehaviors.map(b => b.priority).join(', ')}]`);
-      
       // 执行行为
-      const executedBehaviors = await this.executeBehaviors(sortedBehaviors, executionContext);
-      
+      const executedBehaviors = await this.executeBehaviors(allBehaviors, executionContext);
       const duration = Date.now() - startTime;
       
       console.log(`✅ [行为调度] 调度完成 | 执行了 ${executedBehaviors.length} 个行为 | 耗时: ${duration}ms`);
@@ -523,39 +536,35 @@ export class BehaviorScheduler {
         success: true,
         executedBehaviors,
         duration,
-        message: `成功执行了 ${executedBehaviors.length} 个行为`,
         nextSchedule: this.calculateNextScheduleTime(state, emotion)
       };
       
     } catch (error) {
-      const duration = Date.now() - startTime;
       console.error(`❌ [行为调度] 调度失败:`, error);
-      
       return {
         success: false,
         executedBehaviors: [],
-        duration,
-        error: error instanceof Error ? error.message : '未知错误'
+        duration: Date.now() - startTime,
+        error: error instanceof Error ? error.message : String(error)
       };
     }
   }
 
   /**
-   * 传统调度方法（保持向后兼容）
+   * 传统行为调度方法（向后兼容）
    */
   public async scheduleLegacy(state: PetState, emotion: EmotionType, context?: PluginContext): Promise<BehaviorExecutionResult> {
     const startTime = Date.now();
     
-    // 构建情绪上下文
+    // 构建执行上下文
     const emotionContext: EmotionContext = {
       currentEmotion: emotion,
-      intensity: 0.7, // 默认强度
-      duration: 30000, // 默认持续时间
+      intensity: 0.7,
+      duration: 30000,
       triggers: ['state_change'],
       history: []
     };
-
-    // 构建执行上下文
+    
     const executionContext: BehaviorExecutionContext = {
       state,
       emotion: emotionContext,
@@ -563,30 +572,23 @@ export class BehaviorScheduler {
       sessionId: this.sessionId,
       userContext: context
     };
-
-    // 输出调度日志
+    
     console.log(`🎯 [BehaviorScheduler] 开始调度 | 状态: ${state} | 情绪: ${emotion} | 会话: ${this.sessionId}`);
     
     try {
-      // 获取匹配的行为规则
-      const matchedBehaviors = this.getBehaviorRules(state, emotion);
+      const behaviors = this.findMatchingBehaviors(state, emotion, context);
       
-      if (matchedBehaviors.length === 0) {
+      if (behaviors.length === 0) {
         console.log(`⚠️ [BehaviorScheduler] 未找到匹配的行为规则 | 状态: ${state} | 情绪: ${emotion}`);
         return {
           success: false,
           executedBehaviors: [],
           duration: Date.now() - startTime,
-          message: '未找到匹配的行为规则'
+          nextSchedule: this.calculateNextScheduleTime(state, emotion)
         };
       }
 
-      // 按优先级排序
-      const sortedBehaviors = matchedBehaviors.sort((a, b) => b.priority - a.priority);
-      
-      // 执行行为
-      const executedBehaviors = await this.executeBehaviors(sortedBehaviors, executionContext);
-      
+      const executedBehaviors = await this.executeBehaviors(behaviors, executionContext);
       const duration = Date.now() - startTime;
       
       console.log(`✅ [BehaviorScheduler] 调度完成 | 执行了 ${executedBehaviors.length} 个行为 | 耗时: ${duration}ms`);
@@ -595,326 +597,265 @@ export class BehaviorScheduler {
         success: true,
         executedBehaviors,
         duration,
-        message: `成功执行了 ${executedBehaviors.length} 个行为`,
         nextSchedule: this.calculateNextScheduleTime(state, emotion)
       };
       
     } catch (error) {
-      const duration = Date.now() - startTime;
       console.error(`❌ [BehaviorScheduler] 调度失败:`, error);
-      
       return {
         success: false,
         executedBehaviors: [],
-        duration,
-        error: error instanceof Error ? error.message : '未知错误'
+        duration: Date.now() - startTime,
+        error: error instanceof Error ? error.message : String(error)
       };
     }
   }
 
   /**
-   * 获取状态和情绪对应的行为规则
+   * 查找匹配的行为规则
    */
-  private getBehaviorRules(state: PetState, emotion: EmotionType): BehaviorDefinition[] {
-    const stateRules = this.behaviorRules[state];
-    if (!stateRules) {
-      return [];
-    }
-
-    const emotionRules = stateRules[emotion];
-    if (!emotionRules) {
-      return [];
-    }
-
-    return [...emotionRules]; // 返回副本
+  private findMatchingBehaviors(state: PetState, emotion: EmotionType, context?: PluginContext): BehaviorDefinition[] {
+    // 从规则映射表中获取匹配的行为
+    const behaviors = this.behaviorRules[state]?.[emotion] || [];
+    
+    // 按优先级排序
+    return behaviors.sort((a, b) => b.priority - a.priority);
   }
 
   /**
    * 执行行为列表
    */
   private async executeBehaviors(behaviors: BehaviorDefinition[], context: BehaviorExecutionContext): Promise<BehaviorDefinition[]> {
-    const executedBehaviors: BehaviorDefinition[] = [];
+    const executed: BehaviorDefinition[] = [];
     
     for (const behavior of behaviors) {
       try {
-        await this.executeSingleBehavior(behavior, context);
-        executedBehaviors.push(behavior);
+        if (behavior.delay && behavior.delay > 0) {
+          // 延时执行
+          const behaviorId = `${behavior.type}-${Date.now()}`;
+          console.log(`⏰ [BehaviorScheduler] 延时执行行为: ${behavior.type} | 延时: ${behavior.delay}ms`);
+          
+          const timeoutId = setTimeout(async () => {
+            await this.executeBehavior(behavior, context);
+            this.scheduledBehaviors.delete(behaviorId);
+          }, behavior.delay);
+          
+          this.scheduledBehaviors.set(behaviorId, timeoutId);
+        } else {
+          // 立即执行
+          await this.executeBehavior(behavior, context);
+        }
+        
+        executed.push(behavior);
       } catch (error) {
         console.error(`❌ [BehaviorScheduler] 执行行为失败:`, behavior.type, error);
       }
     }
     
-    return executedBehaviors;
+    return executed;
   }
 
   /**
    * 执行单个行为
    */
-  private async executeSingleBehavior(behavior: BehaviorDefinition, context: BehaviorExecutionContext): Promise<void> {
-    const behaviorId = `${behavior.type}-${Date.now()}`;
-    
-    // 如果有延时，则安排延时执行
-    if (behavior.delay && behavior.delay > 0) {
-      console.log(`⏰ [BehaviorScheduler] 延时执行行为: ${behavior.type} | 延时: ${behavior.delay}ms`);
-      
-      return new Promise((resolve) => {
-        const timeoutId = setTimeout(async () => {
-          await this.performBehaviorAction(behavior, context);
-          this.scheduledBehaviors.delete(behaviorId);
-          resolve();
-        }, behavior.delay);
-        
-        this.scheduledBehaviors.set(behaviorId, timeoutId);
-      });
-    } else {
-      // 立即执行
-      await this.performBehaviorAction(behavior, context);
-    }
-  }
-
-  /**
-   * 执行具体的行为动作
-   */
-  private async performBehaviorAction(behavior: BehaviorDefinition, context: BehaviorExecutionContext): Promise<void> {
+  private async executeBehavior(behavior: BehaviorDefinition, context: BehaviorExecutionContext): Promise<void> {
     const { state, emotion } = context;
     
-    // 输出行为执行日志
     console.log(`🎬 [BehaviorScheduler] 执行行为: ${behavior.type} | 状态: ${state} | 情绪: ${emotion.currentEmotion} | 优先级: ${behavior.priority}`);
     
     if (behavior.message) {
       console.log(`💬 [BehaviorScheduler] 行为消息: ${behavior.message}`);
     }
-    
-    // 根据行为类型执行相应动作
+
+    // 根据行为类型执行相应逻辑
     switch (behavior.type) {
       case BehaviorType.IDLE_ANIMATION:
-        await this.performAnimation(behavior);
+        // 空闲动画
         break;
         
       case BehaviorType.HOVER_FEEDBACK:
-        await this.performHoverFeedback(behavior);
+        // 悬浮反馈
         break;
         
       case BehaviorType.AWAKEN_RESPONSE:
-        await this.performAwakenResponse(behavior);
+        // 唤醒响应
         break;
         
       case BehaviorType.CONTROL_ACTIVATION:
-        await this.performControlActivation(behavior);
+        // 控制激活
         break;
         
       case BehaviorType.EMOTIONAL_EXPRESSION:
-        await this.performEmotionalExpression(behavior, context);
+        // 情绪表达
+        break;
+        
+      case BehaviorType.MOOD_TRANSITION:
+        // 心情转换
         break;
         
       case BehaviorType.PLUGIN_TRIGGER:
-        await this.performPluginTrigger(behavior, context);
+        // 插件触发
+        if (this.pluginRegistry && behavior.pluginId) {
+          // 触发插件
+        }
         break;
         
       case BehaviorType.USER_PROMPT:
-        await this.performUserPrompt(behavior);
+        // 用户提示
         break;
         
       case BehaviorType.SYSTEM_NOTIFICATION:
-        await this.performSystemNotification(behavior);
-        break;
-        
-      case BehaviorType.DELAYED_ACTION:
-        await this.performDelayedAction(behavior, context);
-        break;
-        
-      case BehaviorType.ANIMATION_SEQUENCE:
-        await this.performAnimationSequence(behavior);
+        // 系统通知
         break;
         
       default:
         console.warn(`⚠️ [BehaviorScheduler] 未知的行为类型: ${behavior.type}`);
     }
-    
-    // 如果有持续时间，则等待
+
+    // 模拟行为持续时间
     if (behavior.duration && behavior.duration > 0) {
-      await this.sleep(behavior.duration);
+      await new Promise(resolve => setTimeout(resolve, behavior.duration));
     }
-  }
-
-  /**
-   * 执行动画行为
-   */
-  private async performAnimation(behavior: BehaviorDefinition): Promise<void> {
-    console.log(`🎨 [Animation] 播放动画: ${behavior.animation || 'default'}`);
-    // 这里可以集成实际的动画系统
-  }
-
-  /**
-   * 执行悬停反馈
-   */
-  private async performHoverFeedback(behavior: BehaviorDefinition): Promise<void> {
-    console.log(`👆 [Hover] 悬停反馈: ${behavior.message || '检测到鼠标悬停'}`);
-    // 这里可以集成实际的悬停反馈系统
-  }
-
-  /**
-   * 执行唤醒响应
-   */
-  private async performAwakenResponse(behavior: BehaviorDefinition): Promise<void> {
-    console.log(`🔥 [Awaken] 唤醒响应: ${behavior.message || '神宠被唤醒'}`);
-    // 这里可以集成实际的唤醒系统
-  }
-
-  /**
-   * 执行控制激活
-   */
-  private async performControlActivation(behavior: BehaviorDefinition): Promise<void> {
-    console.log(`🎮 [Control] 控制激活: ${behavior.message || '进入控制模式'}`);
-    // 这里可以集成实际的控制系统
-  }
-
-  /**
-   * 执行情绪表达
-   */
-  private async performEmotionalExpression(behavior: BehaviorDefinition, context: BehaviorExecutionContext): Promise<void> {
-    console.log(`😊 [Emotion] 情绪表达: ${context.emotion.currentEmotion} | ${behavior.message || '表达情绪'}`);
-    // 这里可以集成实际的情绪表达系统
-  }
-
-  /**
-   * 执行插件触发
-   */
-  private async performPluginTrigger(behavior: BehaviorDefinition, context: BehaviorExecutionContext): Promise<void> {
-    console.log(`🔌 [Plugin] 触发插件: ${behavior.pluginId || 'all'} | ${behavior.message || '触发插件'}`);
-    
-    if (this.pluginRegistry && typeof this.pluginRegistry.triggerByState === 'function') {
-      try {
-        // 使用 PluginRegistry 触发插件
-        const result = await this.pluginRegistry.triggerByState(
-          context.state,
-          context.emotion.currentEmotion,
-          {
-            source: 'behavior_scheduler',
-            behaviorType: behavior.type,
-            metadata: behavior.metadata || {},
-            sessionId: this.sessionId
-          }
-        );
-        console.log(`✅ [Plugin] 插件触发成功:`, result);
-      } catch (error) {
-        console.error(`❌ [Plugin] 插件触发失败:`, error);
-      }
-    } else if (behavior.pluginId && this.pluginRegistry && typeof this.pluginRegistry.executePlugin === 'function') {
-      try {
-        // 触发特定插件
-        const result = await this.pluginRegistry.executePlugin(
-          behavior.pluginId,
-          {
-            state: context.state,
-            emotion: context.emotion.currentEmotion,
-            context: context.userContext,
-            metadata: behavior.metadata || {}
-          }
-        );
-        console.log(`✅ [Plugin] 特定插件执行成功: ${behavior.pluginId}`, result);
-      } catch (error) {
-        console.error(`❌ [Plugin] 特定插件执行失败: ${behavior.pluginId}`, error);
-      }
-    } else {
-      // 回退到日志输出
-      console.log(`📝 [Plugin] 模拟触发: ${behavior.pluginId || 'general'} | 元数据:`, behavior.metadata);
-    }
-  }
-
-  /**
-   * 执行用户提示
-   */
-  private async performUserPrompt(behavior: BehaviorDefinition): Promise<void> {
-    console.log(`💭 [Prompt] 用户提示: ${behavior.message || '显示提示'}`);
-    // 这里可以集成实际的用户提示系统
-  }
-
-  /**
-   * 执行系统通知
-   */
-  private async performSystemNotification(behavior: BehaviorDefinition): Promise<void> {
-    console.log(`📢 [System] 系统通知: ${behavior.message || '系统通知'}`);
-    // 这里可以集成实际的系统通知
-  }
-
-  /**
-   * 执行延时动作
-   */
-  private async performDelayedAction(behavior: BehaviorDefinition, context: BehaviorExecutionContext): Promise<void> {
-    console.log(`⏱️ [Delayed] 延时动作: ${behavior.message || '执行延时动作'}`);
-    // 这里可以执行延时后的特定动作
-  }
-
-  /**
-   * 执行动画序列
-   */
-  private async performAnimationSequence(behavior: BehaviorDefinition): Promise<void> {
-    console.log(`🎭 [Sequence] 动画序列: ${behavior.animation || 'default_sequence'}`);
-    // 这里可以集成复杂的动画序列
   }
 
   /**
    * 计算下次调度时间
    */
   private calculateNextScheduleTime(state: PetState, emotion: EmotionType): number {
-    // 根据状态和情绪计算合适的下次调度时间
-    const baseInterval = 5000; // 基础间隔 5 秒
-    
-    let multiplier = 1;
-    
+    // 基础间隔
+    let baseInterval = 5000; // 5秒
+
     // 根据状态调整
     switch (state) {
       case PetState.Idle:
-        multiplier = 2; // 空闲状态调度频率较低
+        baseInterval = 10000; // 空闲时较长间隔
         break;
       case PetState.Hover:
-        multiplier = 0.5; // 悬停状态调度频率较高
+        baseInterval = 3000;  // 悬浮时较短间隔
         break;
       case PetState.Awaken:
-        multiplier = 0.3; // 唤醒状态调度频率最高
+        baseInterval = 2000;  // 唤醒时频繁调度
         break;
       case PetState.Control:
-        multiplier = 0.8; // 控制状态调度频率较高
+        baseInterval = 1000;  // 控制状态最频繁
         break;
     }
-    
+
     // 根据情绪调整
     switch (emotion) {
       case EmotionType.Excited:
-        multiplier *= 0.5; // 兴奋时调度更频繁
+        baseInterval *= 0.7; // 兴奋时加快
+        break;
+      case EmotionType.Calm:
+        baseInterval *= 1.5; // 平静时放慢
         break;
       case EmotionType.Sleepy:
-        multiplier *= 2; // 困倦时调度较少
-        break;
-      case EmotionType.Focused:
-        multiplier *= 1.5; // 专注时调度较少
+        baseInterval *= 2.0; // 困倦时大幅放慢
         break;
     }
+
+    return Date.now() + baseInterval;
+  }
+
+  // 节奏管理器相关方法
+  /**
+   * 注册节奏回调
+   */
+  private registerRhythmCallbacks(): void {
+    if (!this.rhythmManager) return;
     
-    return Date.now() + (baseInterval * multiplier);
-  }
-
-  /**
-   * 获取当前活跃的行为
-   */
-  public getActiveBehaviors(): BehaviorDefinition[] {
-    return Array.from(this.activeBehaviors.values());
-  }
-
-  /**
-   * 清除所有计划的行为
-   */
-  public clearScheduledBehaviors(): void {
-    this.scheduledBehaviors.forEach((timeoutId) => {
-      clearTimeout(timeoutId);
+    // 注册节拍回调 - 用于控制行为执行的节奏
+    this.rhythmManager.tick((timestamp, interval) => {
+      this.onRhythmTick(timestamp, interval);
     });
-    this.scheduledBehaviors.clear();
-    console.log('🧹 [BehaviorScheduler] 已清除所有计划的行为');
+    
+    // 监听节奏模式变化
+    this.rhythmManager.onRhythmChange((mode, config) => {
+      console.log(`🎵 [BehaviorScheduler] 节奏模式变化: ${mode}, 间隔: ${config.baseInterval}ms`);
+    });
+    
+    console.log(`🕰️ [BehaviorScheduler] 节奏管理器已集成`);
   }
 
   /**
-   * 添加自定义行为规则
+   * 节拍回调 - 在节拍器节拍时调用
+   */
+  private onRhythmTick(timestamp: number, interval: number): void {
+    // 可以在这里添加基于节拍的行为逻辑
+    // 比如定期检查状态变化、触发周期性行为等
+    if (process.env.NODE_ENV === 'development') {
+      // 仅在开发模式下输出调试信息
+      console.log(`🎵 [Rhythm] 节拍触发 - 间隔: ${interval}ms`);
+    }
+  }
+
+  /**
+   * 设置行为节奏模式
+   */
+  public setRhythmMode(mode: RhythmModeType): void {
+    if (this.rhythmManager) {
+      this.rhythmManager.setRhythmMode(mode);
+      console.log(`🎵 [BehaviorScheduler] 切换至节奏模式: ${mode}`);
+    }
+  }
+
+  /**
+   * 启动节奏管理器
+   */
+  public startRhythm(): void {
+    if (this.rhythmManager) {
+      this.rhythmManager.start();
+      console.log(`🎵 [BehaviorScheduler] 节奏管理器已启动`);
+    }
+  }
+
+  /**
+   * 停止节奏管理器
+   */
+  public stopRhythm(): void {
+    if (this.rhythmManager) {
+      this.rhythmManager.stop();
+      console.log(`🎵 [BehaviorScheduler] 节奏管理器已停止`);
+    }
+  }
+
+  /**
+   * 清理资源
+   */
+  public dispose(): void {
+    // 清理计划中的行为
+    this.scheduledBehaviors.forEach(timeoutId => clearTimeout(timeoutId));
+    this.scheduledBehaviors.clear();
+    
+    // 清理节奏管理器
+    if (this.rhythmManager) {
+      this.rhythmManager.dispose();
+    }
+    
+    console.log(`🧹 [BehaviorScheduler] 资源已清理`);
+  }
+
+  /**
+   * 销毁调度器（向后兼容）
+   */
+  public destroy(): void {
+    this.dispose();
+  }
+
+  /**
+   * 获取行为统计信息
+   */
+  public getBehaviorStats() {
+    return {
+      totalScheduled: this.scheduledBehaviors.size,
+      activeTimers: this.scheduledBehaviors.size,
+      sessionId: this.sessionId,
+      lastInteraction: this.lastInteractionTimestamp
+    };
+  }
+
+  /**
+   * 添加行为规则（向后兼容）
    */
   public addBehaviorRule(state: PetState, emotion: EmotionType, behavior: BehaviorDefinition): void {
     if (!this.behaviorRules[state]) {
@@ -924,49 +865,6 @@ export class BehaviorScheduler {
       this.behaviorRules[state][emotion] = [];
     }
     this.behaviorRules[state][emotion].push(behavior);
-    console.log(`➕ [BehaviorScheduler] 添加行为规则: ${state} + ${emotion} -> ${behavior.type}`);
-  }
-
-  /**
-   * 获取行为统计信息
-   */
-  public getBehaviorStats(): object {
-    return {
-      sessionId: this.sessionId,
-      activeBehaviors: this.activeBehaviors.size,
-      scheduledBehaviors: this.scheduledBehaviors.size,
-      queuedBehaviors: this.behaviorQueue.length,
-      totalRules: this.getTotalRulesCount()
-    };
-  }
-
-  /**
-   * 获取总规则数量
-   */
-  private getTotalRulesCount(): number {
-    let count = 0;
-    Object.values(this.behaviorRules).forEach(stateRules => {
-      Object.values(stateRules).forEach(emotionRules => {
-        count += emotionRules.length;
-      });
-    });
-    return count;
-  }
-
-  /**
-   * 工具方法：等待指定时间
-   */
-  private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  /**
-   * 销毁调度器
-   */
-  public destroy(): void {
-    this.clearScheduledBehaviors();
-    this.activeBehaviors.clear();
-    this.behaviorQueue.length = 0;
-    console.log('🗑️ [BehaviorScheduler] 调度器已销毁');
+    console.log(`📋 [BehaviorScheduler] 添加行为规则: ${state}/${emotion} → ${behavior.type}`);
   }
 }
