@@ -158,7 +158,7 @@ export class PluginRegistry {
   async healthCheck(): Promise<Record<string, boolean>> {
     const health: Record<string, boolean> = {};
     
-    for (const [pluginId, plugin] of this.plugins) {
+    for (const [pluginId, plugin] of Array.from(this.plugins)) {
       try {
         // 这里可以调用插件的健康检查方法（如果有的话）
         health[pluginId] = this.pluginStatus.get(pluginId) === 'active';

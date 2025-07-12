@@ -7,9 +7,9 @@ import { PetState, EmotionType, EmotionContext } from './types';
 import { 
   BehaviorStrategyManager, 
   BehaviorStrategyRule, 
-  BehaviorExecutionContext,
   createBehaviorStrategyManager 
 } from './core/BehaviorStrategyManager';
+import { BehaviorExecutionContext } from './core/BehaviorScheduler';
 
 /**
  * 模拟情绪上下文

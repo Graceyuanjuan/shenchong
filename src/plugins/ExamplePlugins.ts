@@ -578,7 +578,7 @@ export class NotePlugin implements IPlugin {
       tags.push('生活');
     }
     
-    return [...new Set(tags)];
+    return Array.from(new Set(tags));
   }
 
   private async loadNotes(): Promise<void> {

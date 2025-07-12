@@ -6,7 +6,8 @@
  */
 
 import { PetState, EmotionType, EmotionContext, PluginContext } from '../types';
-import { BehaviorStrategyManager, BehaviorAction, BehaviorExecutionContext } from './BehaviorStrategyManager';
+import { BehaviorStrategyManager, BehaviorAction } from './BehaviorStrategyManager';
+import { BehaviorExecutionContext } from './BehaviorScheduler';
 import { PetBrainBridge } from './PetBrainBridge';
 
 /**

@@ -55,6 +55,7 @@ export interface BehaviorExecutionContext {
   sessionId: string;
   userContext?: PluginContext;
   parentBehavior?: BehaviorDefinition;
+  metadata?: Record<string, any>;
 }
 
 // 行为决策规则映射表

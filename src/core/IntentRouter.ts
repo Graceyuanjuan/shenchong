@@ -126,7 +126,7 @@ export class IntentRouter {
     const lowerInput = input.toLowerCase();
 
     // 遍历所有已注册的意图类型
-    for (const [intentType, patterns] of this.intentPatterns) {
+    for (const [intentType, patterns] of Array.from(this.intentPatterns)) {
       let confidence = 0;
       const parameters: Record<string, any> = {};
 

@@ -8,8 +8,8 @@ import { EmotionType, PetState } from '../../types';
 import { BehaviorDefinition, BehaviorType } from '../BehaviorScheduler';
 import { RhythmType, VisualCueType } from '../visual/VisualFeedbackManager';
 
-// 节奏配置
-export interface RhythmConfig {
+// 行为节奏配置（特定于行为节奏管理器）
+export interface BehaviorRhythmConfig {
   type: RhythmType;
   bpm: number;                      // 每分钟节拍数
   intensity: number;                // 强度 0-1
@@ -42,7 +42,7 @@ export type BehaviorFeedbackCallback = (
  * 行为节奏管理器类
  */
 export class BehaviorRhythmManager {
-  private currentRhythm: RhythmConfig;
+  private currentRhythm: BehaviorRhythmConfig;
   private isActive: boolean = false;
   private beatTimer?: NodeJS.Timeout;
   private beatCount: number = 0;
@@ -51,7 +51,7 @@ export class BehaviorRhythmManager {
   private eventListeners: Map<string, Function[]> = new Map();
 
   // 预定义节奏配置
-  private rhythmConfigs: Map<RhythmType, RhythmConfig> = new Map([
+  private rhythmConfigs: Map<RhythmType, BehaviorRhythmConfig> = new Map([
     [RhythmType.LOW_PULSE, {
       type: RhythmType.LOW_PULSE,
       bpm: 60,
@@ -292,7 +292,7 @@ export class BehaviorRhythmManager {
    */
   public getCurrentRhythm(): {
     type: RhythmType;
-    config: RhythmConfig;
+    config: BehaviorRhythmConfig;
     isActive: boolean;
     beatCount: number;
   } {

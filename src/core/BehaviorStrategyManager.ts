@@ -6,8 +6,11 @@
  */
 
 import { PetState, EmotionType, EmotionContext, PluginContext } from '../types';
+import { BehaviorExecutionContext } from './BehaviorScheduler';
 import { VisualFeedbackManager, VisualCueType } from './visual/VisualFeedbackManager';
 import { BehaviorRhythmManager } from './behavior/BehaviorRhythmManager';
+import { BehaviorDBAdapter } from './db/BehaviorDBAdapter';
+import { StrategyRecord, StrategyConditions } from '../schema/strategySchema';
 
 /**
  * 行为动作接口
@@ -27,18 +30,6 @@ export interface BehaviorActionResult {
   message?: string;
   data?: any;
   nextActions?: BehaviorAction[];
-}
-
-/**
- * 行为执行上下文
- */
-export interface BehaviorExecutionContext {
-  state: PetState;
-  emotion: EmotionContext;
-  pluginContext?: PluginContext;
-  timestamp: number;
-  sessionId: string;
-  metadata?: Record<string, any>;
 }
 
 /**
@@ -96,17 +87,183 @@ export class BehaviorStrategyManager {
   // T4-C: 视觉反馈管理器
   private visualFeedbackManager?: VisualFeedbackManager;
   private rhythmManager?: BehaviorRhythmManager;
+  
+  // T5-A: 策略数据库适配器
+  private dbAdapter: BehaviorDBAdapter;
 
-  constructor() {
-    this.loadDefaultStrategies();
-    this.initializeManagers();
-    console.log('🎯 BehaviorStrategyManager initialized');
+  constructor(dbPath?: string) {
+    this.dbAdapter = new BehaviorDBAdapter(dbPath);
+    this.initializeAsync();
   }
 
   /**
-   * 加载默认策略集合
+   * T5-A: 异步初始化
    */
-  private loadDefaultStrategies(): void {
+  private async initializeAsync(): Promise<void> {
+    await this.loadStrategiesFromDB();
+    this.initializeManagers();
+    this.setupHotReload();
+    console.log('🎯 BehaviorStrategyManager initialized with DB support');
+  }
+
+  /**
+   * T5-A: 从数据库加载策略
+   */
+  private async loadStrategiesFromDB(): Promise<void> {
+    try {
+      // 确保数据库已初始化
+      await this.dbAdapter.initialize();
+      
+      // 获取所有策略
+      const strategyRecords = await this.dbAdapter.getAllStrategies();
+      
+      // 转换并注册策略
+      let loadedCount = 0;
+      for (const record of strategyRecords) {
+        const strategy = this.convertStrategyRecordToBehaviorRule(record);
+        if (strategy) {
+          this.registerStrategy(strategy);
+          loadedCount++;
+        }
+      }
+      
+      console.log(`🎯 从数据库加载了 ${loadedCount} 个行为策略`);
+      
+      // 如果数据库为空，加载默认策略
+      if (loadedCount === 0) {
+        console.log('📂 数据库为空，正在加载默认策略...');
+        await this.loadDefaultStrategies();
+      }
+    } catch (error) {
+      console.error('❌ 从数据库加载策略失败:', error);
+      console.log('📂 回退到默认策略加载...');
+      await this.loadDefaultStrategies();
+    }
+  }
+
+  /**
+   * T5-A: 设置热重载监听
+   */
+  private setupHotReload(): void {
+    this.dbAdapter.onStrategiesChanged((strategies: StrategyRecord[]) => {
+      console.log('🔄 检测到策略变更，正在重新加载...');
+      
+      // 清空现有策略
+      this.strategies.clear();
+      
+      // 重新加载所有策略
+      let reloadedCount = 0;
+      for (const record of strategies) {
+        const strategy = this.convertStrategyRecordToBehaviorRule(record);
+        if (strategy) {
+          this.registerStrategy(strategy);
+          reloadedCount++;
+        }
+      }
+      
+      console.log(`🔄 热重载完成，重新加载了 ${reloadedCount} 个策略`);
+    });
+  }
+
+  /**
+   * T5-A: 将StrategyRecord转换为BehaviorStrategyRule
+   */
+  private convertStrategyRecordToBehaviorRule(record: StrategyRecord): BehaviorStrategyRule | null {
+    try {
+      return {
+        id: record.id,
+        name: record.name,
+        description: record.description || record.name,
+        state: record.conditions.states as PetState | PetState[],
+        emotion: record.conditions.emotions as EmotionType | EmotionType[],
+        priority: record.conditions.priority || 5,
+        conditions: this.convertStrategyConditions(record.conditions),
+        actions: record.actions.map(action => ({
+          type: action.type,
+          delayMs: action.delay,
+          priority: action.priority,
+          execute: this.createActionExecutor(action)
+        })),
+        cooldownMs: record.conditions.cooldown,
+        maxExecutions: record.conditions.maxExecutions,
+        enabled: record.enabled
+      };
+    } catch (error) {
+      console.error(`❌ 转换策略记录失败 [${record.id}]:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * T5-A: 转换策略条件
+   */
+  private convertStrategyConditions(conditions: StrategyConditions): BehaviorCondition[] | undefined {
+    const behaviorConditions: BehaviorCondition[] = [];
+    
+    // 权重条件
+    if (conditions.weight !== undefined) {
+      behaviorConditions.push({
+        type: 'emotion_intensity',
+        operator: 'gte',
+        value: conditions.weight
+      });
+    }
+    
+    // 时间约束条件
+    if (conditions.timeConstraints?.startTime && conditions.timeConstraints?.endTime) {
+      const startHour = parseInt(conditions.timeConstraints.startTime.split(':')[0]);
+      const endHour = parseInt(conditions.timeConstraints.endTime.split(':')[0]);
+      behaviorConditions.push({
+        type: 'time_range',
+        operator: 'between',
+        value: [startHour, endHour]
+      });
+    }
+    
+    return behaviorConditions.length > 0 ? behaviorConditions : undefined;
+  }
+
+  /**
+   * T5-A: 创建动作执行器
+   */
+  private createActionExecutor(action: any): (context: BehaviorExecutionContext) => Promise<BehaviorActionResult> {
+    return async (context: BehaviorExecutionContext) => {
+      try {
+        console.log(`🎬 [策略] ${action.type} - ${action.description || '执行动作'}`);
+        
+        // 执行动作的具体逻辑
+        const result: BehaviorActionResult = {
+          success: true,
+          message: action.message || `✅ ${action.type} 执行成功`,
+          data: action.data || { type: action.type, timestamp: Date.now() }
+        };
+        
+        // 如果有下一步动作，添加到结果中
+        if (action.nextActions) {
+          result.nextActions = action.nextActions.map((nextAction: any) => ({
+            type: nextAction.type,
+            delayMs: nextAction.delayMs,
+            priority: nextAction.priority,
+            execute: this.createActionExecutor(nextAction)
+          }));
+        }
+        
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`❌ 动作执行失败 [${action.type}]:`, error);
+        return {
+          success: false,
+          message: `❌ ${action.type} 执行失败: ${errorMessage}`
+        };
+      }
+    };
+  }
+
+  /**
+   * 加载默认策略集合 (备用方案)
+   */
+  private async loadDefaultStrategies(): Promise<void> {
     const defaultStrategies: BehaviorStrategyRule[] = [
       // 好奇+唤醒：截图+探索提示
       {
@@ -618,7 +775,7 @@ export class BehaviorStrategyManager {
   getMatchingStrategies(state: PetState, emotion: EmotionType, context?: BehaviorExecutionContext): BehaviorStrategyRule[] {
     const matchingStrategies: BehaviorStrategyRule[] = [];
 
-    for (const strategy of this.strategies.values()) {
+    for (const strategy of Array.from(this.strategies.values())) {
       if (!strategy.enabled) continue;
 
       // 检查状态匹配
@@ -836,7 +993,7 @@ export class BehaviorStrategyManager {
    * 清除执行统计
    */
   clearStats(): void {
-    for (const stats of this.executionStats.values()) {
+    for (const stats of Array.from(this.executionStats.values())) {
       stats.executionCount = 0;
       stats.lastExecuted = 0;
       stats.averageExecutionTime = 0;
@@ -861,6 +1018,43 @@ export class BehaviorStrategyManager {
     strategies.forEach(strategy => {
       this.registerStrategy(strategy);
     });
+  }
+
+  /**
+   * T5-A: 数据库管理方法
+   */
+
+  /**
+   * 保存策略到数据库
+   */
+  async saveStrategyToDB(strategy: BehaviorStrategyRule): Promise<boolean> {
+    try {
+      const strategyRecord = this.convertBehaviorRuleToStrategyRecord(strategy);
+      await this.dbAdapter.saveStrategy(strategyRecord);
+      this.registerStrategy(strategy); // 同时注册到内存
+      console.log(`💾 策略已保存到数据库: ${strategy.name} (${strategy.id})`);
+      return true;
+    } catch (error) {
+      console.error(`❌ 保存策略失败 [${strategy.id}]:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * 从数据库删除策略
+   */
+  async removeStrategyFromDB(strategyId: string): Promise<boolean> {
+    try {
+      const success = await this.dbAdapter.deleteStrategy(strategyId);
+      if (success) {
+        this.removeStrategy(strategyId); // 同时从内存移除
+        console.log(`🗑️ 策略已从数据库删除: ${strategyId}`);
+      }
+      return success;
+    } catch (error) {
+      console.error(`❌ 删除策略失败 [${strategyId}]:`, error);
+      return false;
+    }
   }
 
   /**
@@ -947,6 +1141,42 @@ export class BehaviorStrategyManager {
     }
 
     console.log('🎵 [BehaviorStrategy] 外部节奏管理器已注册');
+  }
+
+  /**
+   * T4-C: 将BehaviorStrategyRule转换为StrategyRecord
+   */
+  private convertBehaviorRuleToStrategyRecord(rule: BehaviorStrategyRule): StrategyRecord {
+    const now = new Date().toISOString();
+    
+    return {
+      id: rule.id,
+      name: rule.name,
+      description: rule.description,
+      enabled: rule.enabled,
+      conditions: {
+        states: Array.isArray(rule.state) ? rule.state : [rule.state],
+        emotions: Array.isArray(rule.emotion) ? rule.emotion : [rule.emotion],
+        priority: rule.priority,
+        cooldown: rule.cooldownMs,
+        maxExecutions: rule.maxExecutions,
+        weight: 0.5 // 默认权重
+      },
+      actions: rule.actions.map((action, index) => ({
+        id: `${rule.id}_action_${index}`,
+        type: action.type,
+        name: action.type,
+        delay: action.delayMs,
+        priority: action.priority || 5,
+        params: {}
+      })),
+      metadata: {
+        version: '1.0.0',
+        description: rule.description,
+        createdAt: now,
+        updatedAt: now
+      }
+    };
   }
 
   /**

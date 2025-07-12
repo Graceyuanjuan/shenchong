@@ -833,7 +833,7 @@ export class PetBrain {
       recommendations.push('chat', 'settings');
     }
 
-    return [...new Set(recommendations)].slice(0, 4);
+    return Array.from(new Set(recommendations)).slice(0, 4);
   }
 
   /**
