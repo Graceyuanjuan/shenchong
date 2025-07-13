@@ -1,0 +1,19 @@
+{
+  "name": "好奇汤圆_唤醒状态",
+  "state": "awaken", 
+  "emotion": "curious",
+  "actions": [
+    "tools_peek",
+    "curiosity_bounce",
+    "exploration_glow"
+  ],
+  "rhythm": "responsive",
+  "priority": 7,
+  "metadata": {
+    "description": "在唤醒状态下展现好奇心的行为策略",
+    "tags": ["curious", "awaken", "exploration"],
+    "author": "T5-A Test",
+    "version": "1.0.0",
+    "duration": 6000
+  }
+}

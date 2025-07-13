@@ -7,6 +7,9 @@
 
 import { BehaviorDefinition, BehaviorType } from './BehaviorScheduler';
 import { PetState, EmotionType } from '../types';
+// T5-C: 集成节奏适配管理器
+import { RhythmAdaptationManager, createRhythmAdaptationManager } from '../modules/rhythm/RhythmAdaptationManager';
+import { RhythmContext, RhythmAdaptationDecision } from '../types/rhythm/RhythmContext';
 
 // Node.js 环境的 requestAnimationFrame polyfill
 const isNodeEnv = typeof window === 'undefined';
@@ -87,6 +90,11 @@ export class RhythmController {
   private beatTimer?: NodeJS.Timeout;
   private eventListeners: Map<string, Function[]> = new Map();
   
+  // T5-C: 节奏适配管理器
+  private adaptationManager: RhythmAdaptationManager;
+  private currentMode: string = 'pulse';
+  private lastAdaptationTime: number = 0;
+  
   // 性能监控
   private frameTimeHistory: number[] = [];
   private lastFrameTime: number = 0;
@@ -96,7 +104,7 @@ export class RhythmController {
     totalFrames: 0
   };
 
-  constructor() {
+  constructor(adaptationConfig?: any) {
     this.executionState = {
       segmentStartTime: 0,
       totalElapsedTime: 0,
@@ -106,7 +114,11 @@ export class RhythmController {
       isPaused: false
     };
     
-    console.log('🎵 RhythmController 初始化完成');
+    // T5-C: 初始化节奏适配管理器
+    this.adaptationManager = createRhythmAdaptationManager(adaptationConfig);
+    this.setupAdaptationListeners();
+    
+    console.log('🎵 RhythmController 初始化完成，集成节奏适配能力');
   }
 
   /**
@@ -662,17 +674,97 @@ export class RhythmController {
   }
 
   /**
+   * 设置节奏适配监听器
+   */
+  private setupAdaptationListeners(): void {
+    // T5-C: 监听适配决策更新
+    this.adaptationManager.on('adaptation_decision', (decision: RhythmAdaptationDecision) => {
+      console.log(`🎵 [Rhythm] 收到节奏适配决策: ${JSON.stringify(decision)}`);
+      
+      // 根据适配决策调整节奏段
+      this.applyAdaptationDecision(decision);
+    });
+  }
+
+  /**
+   * 应用节奏适配决策
+   */
+  private applyAdaptationDecision(decision: RhythmAdaptationDecision): void {
+    // T5-C: 应用适配决策
+    if (decision.targetMode && decision.targetMode !== this.currentMode) {
+      this.currentMode = decision.targetMode;
+      
+      console.log(`🎵 [Rhythm] 切换节奏模式: ${this.currentMode}`);
+      
+      // 根据新模式调整当前节奏段
+      if (this.executionState.currentSegment) {
+        // 映射适配模式到RhythmMode
+        const rhythmMode = this.mapAdaptationModeToRhythmMode(decision.targetMode);
+        this.executionState.currentSegment.mode = rhythmMode;
+        
+        // 应用BPM和强度设置
+        if (decision.targetBPM && this.executionState.currentSegment.beatConfig) {
+          this.executionState.currentSegment.beatConfig.bpm = decision.targetBPM;
+        }
+      }
+    }
+    
+    // 记录适配执行
+    this.lastAdaptationTime = Date.now();
+  }
+
+  /**
+   * 映射适配模式到RhythmMode
+   */
+  private mapAdaptationModeToRhythmMode(targetMode: string): RhythmMode {
+    switch (targetMode) {
+      case 'steady':
+        return RhythmMode.CONTINUOUS;
+      case 'pulse':
+        return RhythmMode.PULSE;
+      case 'adaptive':
+        return RhythmMode.ADAPTIVE;
+      default:
+        return RhythmMode.PULSE;
+    }
+  }
+
+  /**
+   * T5-C: 更新节奏上下文 - 外部调用接口
+   */
+  public updateRhythmContext(context: Partial<RhythmContext>): void {
+    this.adaptationManager.updateRhythmContext(context);
+  }
+
+  /**
+   * T5-C: 获取当前节奏适配上下文
+   */
+  public getCurrentRhythmContext(): RhythmContext | null {
+    return this.adaptationManager.getCurrentContext();
+  }
+
+  /**
+   * T5-C: 手动触发节奏重评估
+   */
+  public evaluateRhythmAdaptation(): RhythmAdaptationDecision | null {
+    const decision = this.adaptationManager.applyAdaptation();
+    if (decision) {
+      this.applyAdaptationDecision(decision);
+    }
+    return decision;
+  }
+
+  /**
    * 销毁控制器
    */
   public destroy(): void {
     this.stop();
     this.segments.clear();
     this.eventListeners.clear();
+    
+    // T5-C: 销毁适配管理器
+    this.adaptationManager.destroy();
+    
     console.log('🎵 RhythmController 已销毁');
   }
-}
-
-// 导出工厂函数
-export function createRhythmController(): RhythmController {
-  return new RhythmController();
 }

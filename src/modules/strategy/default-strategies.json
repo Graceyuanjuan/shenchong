@@ -1,0 +1,147 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "description": "神宠系统默认行为策略集合",
+    "author": "SaintGrid Team",
+    "createdAt": "2025-07-12T00:00:00.000Z",
+    "totalStrategies": 8
+  },
+  "strategies": [
+    {
+      "name": "静碗_平静_默认浮动",
+      "state": "Idle",
+      "emotion": "Calm",
+      "actions": [
+        "gentle_float",
+        "soft_glow",
+        "ambient_breathing"
+      ],
+      "rhythm": "background",
+      "priority": 1,
+      "metadata": {
+        "description": "在静碗状态下的默认平静行为",
+        "tags": ["default", "calm", "idle"],
+        "duration": 30000
+      }
+    },
+    {
+      "name": "静碗_困倦_睡眠动画",
+      "state": "Idle",
+      "emotion": "Sleepy", 
+      "actions": [
+        "slow_pulse",
+        "dim_glow",
+        "sleep_indicator"
+      ],
+      "rhythm": "background",
+      "priority": 2,
+      "metadata": {
+        "description": "困倦时的睡眠状态指示",
+        "tags": ["sleep", "tired", "night"],
+        "duration": 60000
+      }
+    },
+    {
+      "name": "感应碗_好奇_探索反应",
+      "state": "Hover",
+      "emotion": "Curious",
+      "actions": [
+        "brightness_increase",
+        "gentle_wobble", 
+        "attention_sparkle"
+      ],
+      "rhythm": "responsive",
+      "priority": 3,
+      "metadata": {
+        "description": "感应到用户时的好奇探索反应",
+        "tags": ["hover", "curious", "responsive"],
+        "duration": 5000
+      }
+    },
+    {
+      "name": "感应碗_兴奋_活跃准备",
+      "state": "Hover",
+      "emotion": "Excited",
+      "actions": [
+        "rapid_pulse",
+        "color_shift",
+        "anticipation_bounce"
+      ],
+      "rhythm": "active",
+      "priority": 4,
+      "metadata": {
+        "description": "兴奋状态下的活跃准备动作",
+        "tags": ["hover", "excited", "active"],
+        "duration": 3000
+      }
+    },
+    {
+      "name": "唤醒碗_快乐_工具展示",
+      "state": "Awaken",
+      "emotion": "Happy",
+      "actions": [
+        "tools_reveal",
+        "cheerful_bounce",
+        "success_sparkle"
+      ],
+      "rhythm": "active",
+      "priority": 5,
+      "metadata": {
+        "description": "快乐状态下展示工具菜单",
+        "tags": ["awaken", "happy", "tools"],
+        "duration": 8000
+      }
+    },
+    {
+      "name": "唤醒碗_专注_精准操作",
+      "state": "Awaken",
+      "emotion": "Focused",
+      "actions": [
+        "tools_highlight",
+        "steady_glow",
+        "precision_indicator"
+      ],
+      "rhythm": "responsive",
+      "priority": 6,
+      "metadata": {
+        "description": "专注状态下的精准操作模式",
+        "tags": ["awaken", "focused", "precision"],
+        "duration": 15000
+      }
+    },
+    {
+      "name": "控制碗_快乐_设置展示",
+      "state": "Control",
+      "emotion": "Happy",
+      "actions": [
+        "settings_panel",
+        "friendly_pulse",
+        "option_highlight"
+      ],
+      "rhythm": "active",
+      "priority": 7,
+      "metadata": {
+        "description": "控制状态下的友好设置界面",
+        "tags": ["control", "happy", "settings"],
+        "duration": 20000
+      }
+    },
+    {
+      "name": "控制碗_专注_深度配置",
+      "state": "Control", 
+      "emotion": "Focused",
+      "actions": [
+        "advanced_settings",
+        "detailed_options",
+        "configuration_guide"
+      ],
+      "rhythm": "responsive",
+      "priority": 8,
+      "metadata": {
+        "description": "专注状态下的深度配置模式",
+        "tags": ["control", "focused", "advanced"],
+        "duration": 30000
+      }
+    }
+  ]
+}

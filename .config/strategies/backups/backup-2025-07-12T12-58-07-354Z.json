@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-07-12T12:58:07.354Z",
+  "strategies": [
+    {
+      "name": "export_test_1",
+      "state": "idle",
+      "emotion": "calm",
+      "actions": [
+        "export_action_1"
+      ],
+      "priority": 1
+    },
+    {
+      "name": "export_test_2",
+      "state": "control",
+      "emotion": "focused",
+      "actions": [
+        "export_action_2"
+      ],
+      "priority": 2
+    }
+  ]
+}

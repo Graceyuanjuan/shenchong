@@ -3,6 +3,9 @@
  */
 
 import { EmotionType, EmotionContext, EmotionHistory, PetState, UserIntent } from '../types';
+import { AIEmotionDriver, AIEmotionDriverFactory, EmotionLog } from '../modules/AIEmotionDriver';
+// T5-C: 导入节奏上下文类型
+import { RhythmContext, TimeOfDay, getCurrentTimeOfDay, UserActivityLevel } from '../types/rhythm/RhythmContext';
 
 export class EmotionEngine {
   private currentContext: EmotionContext;
@@ -13,8 +16,19 @@ export class EmotionEngine {
     taskSuccess: 1.0,
     idleTime: 1.0
   };
+  
+  // T5-B: 集成 AIEmotionDriver
+  private aiEmotionDriver: AIEmotionDriver;
+  private emotionLogs: EmotionLog[] = [];
+  
+  // T5-C: 节奏上下文回调
+  private rhythmContextCallbacks: Set<(context: Partial<RhythmContext>) => void> = new Set();
+  private currentPetState: PetState = PetState.Idle;
+  private stateChangeTime: number = Date.now();
+  private lastInteractionTime: number = Date.now();
+  private interactionCount: number = 0;
 
-  constructor() {
+  constructor(aiDriver?: AIEmotionDriver) {
     this.currentContext = {
       currentEmotion: EmotionType.Calm,
       intensity: 0.5,
@@ -22,7 +36,13 @@ export class EmotionEngine {
       triggers: [],
       history: []
     };
+    
+    // 初始化 AI 情绪驱动器
+    this.aiEmotionDriver = aiDriver || AIEmotionDriverFactory.createDefault();
+    
     this.initializeEmotionRules();
+    
+    console.log('🎭 EmotionEngine 初始化完成，集成 AIEmotionDriver');
   }
 
   /**
@@ -244,6 +264,9 @@ export class EmotionEngine {
     this.currentContext.triggers = [];
 
     console.log(`🎭 Emotion changed to: ${emotion} (intensity: ${this.currentContext.intensity.toFixed(2)})`);
+    
+    // T5-C: 情绪变化时通知节奏系统
+    this.notifyRhythmContextUpdate();
   }
 
   /**
@@ -435,6 +458,224 @@ export class EmotionEngine {
           sound: 'calm_ambient'
         };
     }
+  }
+
+  /**
+   * T5-B: 根据宠物状态更新情绪（通过 AIEmotionDriver）
+   */
+  updateEmotionByState(state: PetState, context?: any): void {
+    try {
+      // 使用 AI 情绪驱动器决定新情绪
+      const newEmotion = this.aiEmotionDriver.decideEmotion({
+        state,
+        context,
+        history: this.emotionLogs
+      });
+
+      // 如果情绪发生变化，则更新
+      if (newEmotion !== this.currentContext.currentEmotion) {
+        console.log(`🎭 EmotionEngine: 状态 ${state} 触发情绪变化 ${this.currentContext.currentEmotion} → ${newEmotion}`);
+        
+        // 设置新情绪
+        this.setEmotion(newEmotion, 0.7, 30000);
+        
+        // 记录情绪日志
+        this.recordEmotionLog(newEmotion, state, context, `state_update_${state}`);
+      }
+    } catch (error) {
+      console.error('❌ EmotionEngine: AI情绪推断失败', error);
+    }
+  }
+
+  /**
+   * T5-B: 记录情绪变化日志
+   */
+  private recordEmotionLog(emotion: EmotionType, state: PetState, context?: any, trigger?: string): void {
+    const log: EmotionLog = {
+      timestamp: Date.now(),
+      emotion,
+      state,
+      intensity: this.currentContext.intensity,
+      context,
+      trigger
+    };
+
+    this.emotionLogs.push(log);
+    
+    // 保持日志限制
+    if (this.emotionLogs.length > 100) {
+      this.emotionLogs = this.emotionLogs.slice(-50);
+    }
+  }
+
+  /**
+   * T5-B: 获取情绪统计信息
+   */
+  getEmotionStatistics(): {
+    aiDriverStats: any;
+    emotionLogs: EmotionLog[];
+    currentEmotion: EmotionType;
+    emotionHistory: EmotionHistory[];
+  } {
+    return {
+      aiDriverStats: (this.aiEmotionDriver as any).getStatistics?.() || {},
+      emotionLogs: [...this.emotionLogs],
+      currentEmotion: this.currentContext.currentEmotion,
+      emotionHistory: [...this.currentContext.history]
+    };
+  }
+
+  /**
+   * T5-B: 设置新的 AI 情绪驱动器
+   */
+  setAIEmotionDriver(driver: AIEmotionDriver): void {
+    this.aiEmotionDriver = driver;
+    console.log('🎭 EmotionEngine: 更新 AI 情绪驱动器');
+  }
+
+  // =============== T5-C: 节奏上下文集成方法 ===============
+
+  /**
+   * T5-C: 注册节奏上下文更新回调
+   */
+  onRhythmContextUpdate(callback: (context: Partial<RhythmContext>) => void): void {
+    this.rhythmContextCallbacks.add(callback);
+    console.log(`🎭 EmotionEngine: 注册节奏上下文回调，当前回调数: ${this.rhythmContextCallbacks.size}`);
+  }
+
+  /**
+   * T5-C: 移除节奏上下文更新回调
+   */
+  offRhythmContextUpdate(callback: (context: Partial<RhythmContext>) => void): void {
+    this.rhythmContextCallbacks.delete(callback);
+  }
+
+  /**
+   * T5-C: 更新宠物状态（用于节奏适配）
+   */
+  updatePetState(newState: PetState): void {
+    if (newState !== this.currentPetState) {
+      this.currentPetState = newState;
+      this.stateChangeTime = Date.now();
+      this.interactionCount++;
+      this.lastInteractionTime = Date.now();
+      
+      // 通知节奏系统状态变化
+      this.notifyRhythmContextUpdate();
+      
+      console.log(`🎭 EmotionEngine: 宠物状态更新 ${this.currentPetState}，交互计数: ${this.interactionCount}`);
+    }
+  }
+
+  /**
+   * T5-C: 构建并推送节奏上下文
+   */
+  private notifyRhythmContextUpdate(): void {
+    const now = Date.now();
+    const context: Partial<RhythmContext> = {
+      currentEmotion: this.currentContext.currentEmotion,
+      emotionIntensity: this.currentContext.intensity,
+      emotionDuration: now - (this.currentContext.duration || 0),
+      currentState: this.currentPetState,
+      stateDuration: now - this.stateChangeTime,
+      timeOfDay: getCurrentTimeOfDay(),
+      timestamp: now,
+      userStats: {
+        totalInteractions: this.interactionCount,
+        averageInterval: this.calculateAverageInterval(),
+        recentFrequency: this.calculateRecentFrequency(),
+        continuousIdleTime: now - this.lastInteractionTime,
+        lastInteractionTime: this.lastInteractionTime,
+        interactionPattern: this.determineInteractionPattern()
+      },
+      activityLevel: this.determineActivityLevel(),
+      metadata: {
+        source: 'emotion_engine',
+        emotionHistory: this.currentContext.history.slice(-5) // 最近5条情绪记录
+      }
+    };
+
+    // 推送给所有注册的回调
+    this.rhythmContextCallbacks.forEach(callback => {
+      try {
+        callback(context);
+      } catch (error) {
+        console.error('🎭 EmotionEngine: 节奏上下文回调执行错误:', error);
+      }
+    });
+  }
+
+  /**
+   * T5-C: 计算平均交互间隔
+   */
+  private calculateAverageInterval(): number {
+    // 简化计算，基于当前数据
+    if (this.interactionCount <= 1) {
+      return 60000; // 默认1分钟
+    }
+    
+    const totalTime = Date.now() - this.stateChangeTime;
+    return totalTime / (this.interactionCount - 1);
+  }
+
+  /**
+   * T5-C: 计算最近频率
+   */
+  private calculateRecentFrequency(): number {
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    
+    // 简化计算：如果最后交互在5分钟内，则基于总交互数估算
+    if (this.lastInteractionTime > fiveMinutesAgo) {
+      const recentInteractions = Math.min(this.interactionCount, 5); // 假设最近5次交互
+      return recentInteractions; // 每分钟次数
+    }
+    
+    return 0;
+  }
+
+  /**
+   * T5-C: 确定交互模式
+   */
+  private determineInteractionPattern(): 'burst' | 'steady' | 'sparse' | 'idle' {
+    const recentFreq = this.calculateRecentFrequency();
+    const idleTime = Date.now() - this.lastInteractionTime;
+    
+    if (idleTime > 5 * 60 * 1000) { // 5分钟无交互
+      return 'idle';
+    } else if (recentFreq > 10) {
+      return 'burst';
+    } else if (recentFreq > 2) {
+      return 'steady';
+    } else {
+      return 'sparse';
+    }
+  }
+
+  /**
+   * T5-C: 确定活跃度等级
+   */
+  private determineActivityLevel(): UserActivityLevel {
+    const recentFreq = this.calculateRecentFrequency();
+    const idleTime = Date.now() - this.lastInteractionTime;
+    
+    if (idleTime > 10 * 60 * 1000) { // 10分钟无交互
+      return UserActivityLevel.Inactive;
+    } else if (recentFreq > 10) {
+      return UserActivityLevel.Burst;
+    } else if (recentFreq > 5) {
+      return UserActivityLevel.High;
+    } else if (recentFreq > 2) {
+      return UserActivityLevel.Medium;
+    } else {
+      return UserActivityLevel.Low;
+    }
+  }
+
+  /**
+   * T5-C: 手动触发节奏上下文更新
+   */
+  triggerRhythmContextUpdate(): void {
+    this.notifyRhythmContextUpdate();
   }
 }
 

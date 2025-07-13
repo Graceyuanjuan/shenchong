@@ -1,0 +1,17 @@
+{
+  "strategies": [
+    {
+      "name": "validation_point_test",
+      "state": "idle",
+      "emotion": "calm",
+      "actions": [
+        "validation_test"
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-07-12T13:25:44.428Z",
+    "totalStrategies": 1
+  }
+}

@@ -7,6 +7,7 @@ import { PetState, EmotionType, EmotionContext, PluginContext } from '../types';
 import { StrategyManager, StrategyContext, IBehaviorStrategy } from './BehaviorStrategy';
 import { BehaviorRhythmManager } from '../modules/rhythm/BehaviorRhythmManager';
 import { RhythmMode, type RhythmTickCallback } from '../types/BehaviorRhythm';
+import { RhythmAdaptationEngine, createRhythmAdaptationEngine } from '../modules/rhythm/RhythmAdaptationEngine';
 
 type RhythmModeType = typeof RhythmMode[keyof typeof RhythmMode];
 
@@ -90,6 +91,7 @@ export class BehaviorScheduler {
   private emotionEngine?: any; // EmotionEngine实例
   private pluginRegistry?: any; // PluginRegistry实例
   private rhythmManager?: BehaviorRhythmManager; // RhythmManager 实例
+  private rhythmAdaptationEngine: RhythmAdaptationEngine; // RhythmAdaptationEngine 实例
   private lastInteractionTimestamp: number = Date.now();
   
   constructor(emotionEngine?: any, pluginRegistry?: any) {
@@ -101,10 +103,12 @@ export class BehaviorScheduler {
     this.emotionEngine = emotionEngine;
     this.pluginRegistry = pluginRegistry;
     this.rhythmManager = new BehaviorRhythmManager();
+    this.rhythmAdaptationEngine = createRhythmAdaptationEngine();
     
     console.log(`🎯 BehaviorScheduler initialized with session: ${this.sessionId}`);
     if (emotionEngine) console.log(`🧠 EmotionEngine integrated`);
     if (pluginRegistry) console.log(`🔌 PluginRegistry integrated`);
+    console.log(`🎵 RhythmAdaptationEngine integrated`);
     
     // 注册节奏回调
     this.registerRhythmCallbacks();
@@ -496,14 +500,23 @@ export class BehaviorScheduler {
 
     console.log(`🎯 [行为调度] 状态: ${state} | 情绪: ${emotion} | 强度: ${emotionContext.intensity?.toFixed(2)} | 会话: ${this.sessionId}`);
     
+    // 更新节奏适配引擎上下文
+    this.rhythmAdaptationEngine.updateRhythmByContext(state, emotion, startTime);
+    const adaptedRhythm = this.rhythmAdaptationEngine.getCurrentRhythm();
+    
     // 集成节奏控制 - 让行为执行与节拍同步
-    if (this.rhythmManager && this.rhythmManager.isActive()) {
-      const rhythmState = this.rhythmManager.getCurrentState();
-      console.log(`🎵 [节奏集成] 当前节奏: ${rhythmState.currentMode} | 间隔: ${rhythmState.currentInterval}ms`);
+    if (this.rhythmManager) {
+      // 应用适配引擎决定的节奏模式
+      this.rhythmManager.setRhythmMode(adaptedRhythm);
       
-      // 根据情绪强度自适应节奏
-      if (rhythmState.currentMode === RhythmMode.ADAPTIVE) {
-        this.rhythmManager.adaptToEmotion(emotionContext.intensity);
+      if (this.rhythmManager.isActive()) {
+        const rhythmState = this.rhythmManager.getCurrentState();
+        console.log(`🎵 [节奏集成] 适配节奏: ${adaptedRhythm} | 当前节奏: ${rhythmState.currentMode} | 间隔: ${rhythmState.currentInterval}ms`);
+        
+        // 根据情绪强度自适应节奏
+        if (rhythmState.currentMode === RhythmMode.ADAPTIVE) {
+          this.rhythmManager.adaptToEmotion(emotionContext.intensity);
+        }
       }
     }
     

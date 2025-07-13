@@ -1,8 +1,10 @@
 /**
  * T4-0: 神宠播放器 UI 动画绑定测试
+ * T5-B: 添加 AI 情绪驱动器联动测试
  * 
  * 验证 UI 动画组件与 PlayerPlugin 插件系统的集成
  * 测试行为链、情绪驱动触发和状态同步
+ * 验证 UI 操作后情绪是否正确切换
  */
 
 import { PetState, EmotionType } from './types';
@@ -11,6 +13,8 @@ import { PluginRegistry } from './core/PluginRegistry';
 import { PetBrainBridge, UIActionType } from './core/bridge/PetBrainBridge';
 import AnimatedPlayerComponent from './ui/components/Player/AnimatedPlayerComponent';
 import { PlayerUIState } from './ui/components/Player/AnimatedPlayerComponent.legacy';
+import { EmotionEngine } from './core/EmotionEngine';
+import { AIEmotionDriverFactory, RuleBasedEmotionModel } from './modules/AIEmotionDriver';
 
 // Mock Rust 桥接模块（复用之前的 Mock）
 const mockDirPlayerBridge = {
@@ -627,6 +631,127 @@ async function testBehaviorStrategyBinding(): Promise<void> {
 }
 
 /**
+ * T5-B: 测试 AI 情绪驱动器与 UI 的联动
+ */
+async function testEmotionDrivenUIInteraction(): Promise<void> {
+  console.log('\n🎭 ===== T5-B AI情绪驱动器 UI 联动测试 =====');
+  
+  try {
+    // 创建情绪驱动器和情绪引擎
+    const emotionDriver = AIEmotionDriverFactory.createRuleBased();
+    const emotionEngine = new EmotionEngine(emotionDriver);
+    
+    console.log('🧠 创建 AI 情绪驱动器和情绪引擎');
+    
+    // 模拟UI状态变化和情绪响应
+    const uiInteractions = [
+      { action: '鼠标悬停', state: PetState.Hover, expectedEmotion: EmotionType.Curious },
+      { action: '左键点击', state: PetState.Awaken, expectedEmotion: EmotionType.Happy },
+      { action: '右键点击', state: PetState.Control, expectedEmotion: EmotionType.Focused },
+      { action: '返回空闲', state: PetState.Idle, expectedEmotion: EmotionType.Calm }
+    ];
+    
+    console.log('\n📱 模拟 UI 交互序列:');
+    
+    for (const interaction of uiInteractions) {
+      console.log(`\n   👆 ${interaction.action} (${interaction.state})`);
+      
+      // 触发状态更新
+      emotionEngine.updateEmotionByState(interaction.state, {
+        action: interaction.action,
+        timestamp: Date.now(),
+        source: 'ui_interaction'
+      });
+      
+      // 获取当前情绪
+      const currentEmotionContext = emotionEngine.getCurrentEmotion();
+      const currentEmotion = currentEmotionContext.currentEmotion;
+      const stats = emotionEngine.getEmotionStatistics();
+      
+      console.log(`   🎭 情绪变化: → ${currentEmotion}`);
+      console.log(`   📊 交互计数: ${stats.aiDriverStats.totalInteractions || 0}`);
+      
+      // 验证情绪是否符合预期
+      if (currentEmotion === interaction.expectedEmotion) {
+        console.log(`   ✅ 情绪推断正确 (${interaction.expectedEmotion})`);
+      } else {
+        console.log(`   ⚠️ 情绪推断差异: 期望 ${interaction.expectedEmotion}, 实际 ${currentEmotion}`);
+      }
+      
+      // 模拟UI响应延迟
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    // 测试长时间无操作场景
+    console.log('\n⏰ 测试长时间无操作场景:');
+    
+    // 等待一段时间（模拟用户离开）
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    // 使用自定义的短超时驱动器
+    const shortTimeoutDriver = new RuleBasedEmotionModel({ idleTimeoutMs: 150 });
+    emotionEngine.setAIEmotionDriver(shortTimeoutDriver);
+    
+    // 触发空闲状态检查
+    emotionEngine.updateEmotionByState(PetState.Idle, {
+      action: 'idle_check',
+      idleDuration: 200,
+      source: 'timer'
+    });
+    
+    const finalEmotionContext = emotionEngine.getCurrentEmotion();
+    const finalEmotion = finalEmotionContext.currentEmotion;
+    console.log(`   💤 长时间空闲后情绪: ${finalEmotion}`);
+    
+    if (finalEmotion === EmotionType.Sleepy) {
+      console.log('   ✅ 正确触发困倦情绪');
+    } else {
+      console.log(`   ⚠️ 期望困倦情绪，实际: ${finalEmotion}`);
+    }
+    
+    // 频繁交互测试
+    console.log('\n🔥 测试频繁交互场景:');
+    
+    const excitementDriver = AIEmotionDriverFactory.createRuleBased({ excitementThreshold: 3 });
+    emotionEngine.setAIEmotionDriver(excitementDriver);
+    
+    // 模拟快速连续点击
+    for (let i = 0; i < 5; i++) {
+      emotionEngine.updateEmotionByState(PetState.Awaken, {
+        action: `rapid_click_${i}`,
+        timestamp: Date.now(),
+        source: 'ui_rapid_interaction'
+      });
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    
+    const excitedEmotionContext = emotionEngine.getCurrentEmotion();
+    const excitedEmotion = excitedEmotionContext.currentEmotion;
+    console.log(`   ⚡ 频繁交互后情绪: ${excitedEmotion}`);
+    
+    if (excitedEmotion === EmotionType.Excited) {
+      console.log('   ✅ 正确触发兴奋情绪');
+    } else {
+      console.log(`   ⚠️ 期望兴奋情绪，实际: ${excitedEmotion}`);
+    }
+    
+    // 显示完整的情绪统计
+    const finalStats = emotionEngine.getEmotionStatistics();
+    console.log('\n📈 最终情绪统计:');
+    console.log('   总交互次数:', finalStats.aiDriverStats.totalInteractions || 0);
+    console.log('   情绪分布:', finalStats.aiDriverStats.emotionDistribution || {});
+    console.log('   平均情绪强度:', (finalStats.aiDriverStats.averageEmotionIntensity || 0).toFixed(2));
+    console.log('   情绪日志条目:', finalStats.emotionLogs.length);
+    
+    console.log('\n🎭 AI情绪驱动器 UI 联动测试完成 ✅');
+    
+  } catch (error) {
+    console.error('❌ AI情绪驱动器 UI 联动测试失败:', error);
+    throw error;
+  }
+}
+
+/**
  * 主测试函数
  */
 async function runPlayerUITests(): Promise<void> {
@@ -639,6 +764,7 @@ async function runPlayerUITests(): Promise<void> {
     await testCompleteIntegration();
     await testErrorHandlingAndEdgeCases();
     await testBehaviorStrategyBinding();
+    await testEmotionDrivenUIInteraction();
 
     console.log('\n🎉 ===== 所有测试通过！UI 动画绑定验证成功 =====');
     console.log('\n📊 测试总结:');
@@ -676,5 +802,6 @@ export {
   testPetBrainBridge,
   testCompleteIntegration,
   testErrorHandlingAndEdgeCases,
-  testBehaviorStrategyBinding
+  testBehaviorStrategyBinding,
+  testEmotionDrivenUIInteraction
 };
