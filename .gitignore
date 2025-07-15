@@ -15,8 +15,9 @@ build/
 # 环境变量
 .env
 
-# 个人配置
-.vscode/
+# VSCode 个人配置（但保留项目配置）
+.vscode/settings.json
+.vscode/launch.json
 
 # 防止重复的测试文件
 src/ui/tests/test-visual-feedback.ts

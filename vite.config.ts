@@ -8,9 +8,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@ui': path.resolve(__dirname, './ui'),
-      '@components': path.resolve(__dirname, './ui/components')
+      '@ui': path.resolve(__dirname, './src/ui'),
+      '@components': path.resolve(__dirname, './src/ui/components')
     }
+  },
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'react'
   },
   build: {
     outDir: 'dist-ui',

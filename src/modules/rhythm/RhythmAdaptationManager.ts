@@ -390,7 +390,7 @@ export class RhythmAdaptationManager {
     // 计算平均间隔
     let averageInterval = 60000; // 默认1分钟
     if (this.interactionTimestamps.length > 1) {
-      const intervals = [];
+      const intervals: number[] = [];
       for (let i = 1; i < this.interactionTimestamps.length; i++) {
         intervals.push(this.interactionTimestamps[i].timestamp - this.interactionTimestamps[i-1].timestamp);
       }

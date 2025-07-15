@@ -21,7 +21,7 @@ const mockDirPlayerBridge = {
   createMovieChunkList: (config: any) => {
     console.log('🔧 [Mock] createMovieChunkList 调用', config);
     const chunkCount = Math.ceil((config.totalDuration || 60) / (config.chunkSize || 5));
-    const chunks = [];
+    const chunks: any[] = [];
     for (let i = 0; i < chunkCount; i++) {
       chunks.push({
         id: `${config.videoId}_chunk_${i}`,

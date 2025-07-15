@@ -24,7 +24,23 @@ function createWindow() {
 
   // 加载应用
   if (isDev) {
-    mainWindow.loadURL('http://localhost:3000');
+    // 在开发环境下尝试多个端口
+    const tryLoadURL = async () => {
+      const ports = [3000, 3001, 3002, 3003, 3004, 3005];
+      for (const port of ports) {
+        try {
+          const url = `http://localhost:${port}`;
+          console.log(`🔍 Trying to load: ${url}`);
+          await mainWindow.loadURL(url);
+          console.log(`✅ Successfully loaded: ${url}`);
+          break;
+        } catch (error) {
+          console.log(`❌ Failed to load port ${port}: ${error.message}`);
+          continue;
+        }
+      }
+    };
+    tryLoadURL();
     // 开发环境下打开开发者工具
     mainWindow.webContents.openDevTools();
   } else {

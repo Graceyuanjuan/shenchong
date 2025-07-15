@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SaintGridPetSystem } from './index';
 import { PetState, EmotionType } from './types';
+import { StrategyConfigPanel } from './modules/StrategyConfigUI/StrategyConfigPanel';
 
 interface PetSystemAppState {
   currentState: PetState;
@@ -9,6 +10,7 @@ interface PetSystemAppState {
   pluginStatus: string;
   rhythmMode: string;
   lastBehavior: string;
+  showStrategyPanel: boolean;
 }
 
 const PetSystemApp: React.FC = () => {
@@ -19,7 +21,8 @@ const PetSystemApp: React.FC = () => {
     isSystemReady: false,
     pluginStatus: '',
     rhythmMode: 'steady',
-    lastBehavior: ''
+    lastBehavior: '',
+    showStrategyPanel: false
   });
 
   // 初始化神宠系统
@@ -179,6 +182,14 @@ const PetSystemApp: React.FC = () => {
     }
   }, [petSystem]);
 
+  // 切换策略配置面板
+  const toggleStrategyPanel = useCallback(() => {
+    setAppState(prev => ({
+      ...prev,
+      showStrategyPanel: !prev.showStrategyPanel
+    }));
+  }, []);
+
   // 生成状态对应的 CSS 类名
   const getStateClassName = () => {
     const stateClass = `pet-state-${appState.currentState.toLowerCase()}`;
@@ -211,6 +222,46 @@ const PetSystemApp: React.FC = () => {
 
   return (
     <div className="pet-container">
+      {/* 配置面板切换按钮 */}
+      <button
+        onClick={toggleStrategyPanel}
+        style={{
+          position: 'absolute',
+          top: '10px',
+          right: '10px',
+          padding: '8px 12px',
+          backgroundColor: appState.showStrategyPanel ? '#dc3545' : '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '12px',
+          fontWeight: 'bold',
+          zIndex: 1000
+        }}
+      >
+        {appState.showStrategyPanel ? '❌ 关闭配置' : '⚙️ 策略配置'}
+      </button>
+
+      {/* 策略配置面板 */}
+      {appState.showStrategyPanel && (
+        <div style={{
+          position: 'absolute',
+          top: '50px',
+          right: '10px',
+          width: '600px',
+          maxHeight: 'calc(100vh - 70px)',
+          overflow: 'auto',
+          backgroundColor: 'white',
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+          zIndex: 999
+        }}>
+          <StrategyConfigPanel />
+        </div>
+      )}
+
       {/* 状态指示器 */}
       <div className="state-indicator">
         {getStateText()}

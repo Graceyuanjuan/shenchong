@@ -3,8 +3,8 @@
  * 测试策略加载、更新、错误处理等功能
  */
 
-import fs from 'fs/promises';
-import path from 'path';
+import { promises as fs } from 'fs';
+import * as path from 'path';
 import { BehaviorDB } from '../core/db/BehaviorDB';
 import { BehaviorDBAdapter } from '../core/db/BehaviorDBAdapter';
 import { StrategyRecord, createDefaultMetadata } from '../schema/strategySchema';

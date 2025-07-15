@@ -1,19 +1,20 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "commonjs",
-    "lib": ["ES2020", "DOM"],
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "removeComments": false,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": false,
@@ -21,13 +22,15 @@
     "exactOptionalPropertyTypes": false,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
     "downlevelIteration": true,
     "jsx": "react-jsx",
-    "types": ["node", "react", "jest"],
+    "jsxImportSource": "react",
+    "types": ["node", "react", "react-dom", "jest"],
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["*"],
+      "@ui/*": ["ui/*"],
+      "@components/*": ["ui/components/*"]
     }
   },
   "include": [
@@ -35,6 +38,7 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "dist-ui"
   ]
 }

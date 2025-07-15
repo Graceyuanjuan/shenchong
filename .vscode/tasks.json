@@ -1,0 +1,56 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "problemMatcher": ["$tsc"],
+      "label": "npm: build",
+      "detail": "tsc"
+    },
+    {
+      "type": "npm",
+      "script": "dev",
+      "group": "build",
+      "problemMatcher": ["$tsc-watch"],
+      "isBackground": true,
+      "label": "npm: dev",
+      "detail": "tsc --watch"
+    },
+    {
+      "type": "npm",
+      "script": "test",
+      "group": "test",
+      "problemMatcher": [],
+      "label": "npm: test",
+      "detail": "jest"
+    },
+    {
+      "type": "npm",
+      "script": "ui:dev",
+      "group": "build",
+      "problemMatcher": [],
+      "isBackground": true,
+      "label": "npm: ui:dev",
+      "detail": "vite"
+    },
+    {
+      "type": "npm",
+      "script": "ui:build",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: ui:build",
+      "detail": "vite build"
+    },
+    {
+      "type": "npm",
+      "script": "dev:full",
+      "group": "build",
+      "problemMatcher": ["$tsc-watch"],
+      "isBackground": true,
+      "label": "npm: dev:full",
+      "detail": "concurrently \"npm run dev\" \"npm run ui:dev\""
+    }
+  ]
+}
