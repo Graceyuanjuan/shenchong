@@ -57,7 +57,7 @@ export class BehaviorMemory {
   search(criteria: BehaviorRecordFilter): BehaviorRecord[] {
     const results: BehaviorRecord[] = [];
     
-    for (const record of this.records.values()) {
+    for (const record of Array.from(this.records.values())) {
       if (this.matchesCriteria(record, criteria)) {
         results.push(record);
       }

@@ -66,7 +66,7 @@ export class BehaviorMemoryAnalyzer {
     
     // 分析情绪-行为模式
     const emotionBehaviorMap = this.groupByEmotion(records);
-    for (const [emotion, behaviorRecords] of emotionBehaviorMap) {
+    for (const [emotion, behaviorRecords] of Array.from(emotionBehaviorMap.entries())) {
       const behaviorCounts = this.countBehaviors(behaviorRecords);
       const totalCount = behaviorRecords.length;
       

@@ -380,7 +380,7 @@ export class BehaviorDB {
    * 触发热加载回调
    */
   private triggerHotReload(): void {
-    for (const [name, callback] of this.watchers) {
+    for (const [name, callback] of Array.from(this.watchers.entries())) {
       try {
         callback();
         console.log(`🔥 触发热加载回调: ${name}`);
