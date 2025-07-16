@@ -72,12 +72,21 @@ rm package-lock.json
 npm install
 ```
 
-### 步骤4: 验证安装
+### 步骤4: 验证安装并启动完整UI
 
 ```bash
+# 编译TypeScript代码
 npm run build
-npm run dev
+
+# 启动完整的UI界面 (推荐)
+npm run dev:full
+
+# 或者分别启动 (高级用法)
+# npm run dev      # 启动TypeScript编译
+# npm run ui:dev   # 启动UI开发服务器
 ```
+
+**重要**: 要看到完整的UI界面，必须运行 `npm run dev:full` 命令！
 
 ## 🔧 如果仍有问题
 
