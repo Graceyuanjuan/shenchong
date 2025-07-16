@@ -3,7 +3,9 @@
 ## ⚠️ 当前问题诊断
 
 **错误现象**: `RequestError: connect ETIMEDOUT 140.82.121.3:443`
+
 **问题原因**: 连接GitHub/npm官方源超时，典型的网络访问受限问题
+
 **解决方案**: 配置国内镜像源，绕过网络限制
 
 ## 🚀 快速解决依赖下载问题
@@ -49,25 +51,29 @@ yarn install
 
 ## 📋 完整安装步骤
 
-1. **配置镜像源**:
+### 步骤1: 配置镜像源
+
 ```bash
 npm config set registry https://registry.npmmirror.com
 npm config set electron_mirror https://cdn.npmmirror.com/binaries/electron/
 ```
 
-2. **清理缓存**:
+### 步骤2: 清理缓存
+
 ```bash
 npm cache clean --force
 rm -rf node_modules
 rm package-lock.json
 ```
 
-3. **重新安装**:
+### 步骤3: 重新安装
+
 ```bash
 npm install
 ```
 
-4. **验证安装**:
+### 步骤4: 验证安装
+
 ```bash
 npm run build
 npm run dev
@@ -76,6 +82,7 @@ npm run dev
 ## 🔧 如果仍有问题
 
 ### 临时使用代理 (如果有VPN)
+
 ```bash
 npm config set proxy http://127.0.0.1:7890
 npm config set https-proxy http://127.0.0.1:7890
@@ -86,6 +93,7 @@ npm config delete https-proxy
 ```
 
 ### 检查网络连接
+
 ```bash
 # 测试连接
 ping registry.npmmirror.com
@@ -95,9 +103,11 @@ curl -I https://registry.npmmirror.com
 ## 📞 联系信息
 
 如果以上方法都不行，请联系我们，我们可以：
+
 1. 提供离线安装包
 2. 使用Docker容器方式
 3. 提供已构建的dist文件
 
 ---
-*此文档专为中国大陆网络环境优化*
+
+此文档专为中国大陆网络环境优化

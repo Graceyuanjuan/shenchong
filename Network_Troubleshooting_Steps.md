@@ -2,12 +2,12 @@
 
 ## 🔍 当前错误分析
 
-```
+```text
 RequestError: connect ETIMEDOUT 140.82.121.3:443
 ```
 
-**IP地址**: `140.82.121.3` (这是GitHub的服务器IP)
-**端口**: `443` (HTTPS端口)
+**IP地址**: `140.82.121.3` (这是GitHub的服务器IP)  
+**端口**: `443` (HTTPS端口)  
 **错误类型**: 连接超时
 
 ## 🛠️ 立即执行的解决步骤
@@ -122,6 +122,7 @@ npm config delete https-proxy
 ## 💡 预期结果
 
 执行完成后，应该看到：
+
 1. `npm install` 成功完成，无ETIMEDOUT错误
 2. `npm run build` 成功编译TypeScript
 3. `npm run ui:build` 成功构建UI
@@ -130,6 +131,7 @@ npm config delete https-proxy
 ## 📞 如果仍有问题
 
 如果以上所有步骤都无法解决，请提供：
+
 1. 执行步骤1后 `npm config list` 的输出
 2. 执行步骤2后 `npm install` 的完整错误信息
 3. 网络测试命令的结果
