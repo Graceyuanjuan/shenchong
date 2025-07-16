@@ -16,8 +16,8 @@ interface PetSystemAppState {
 const PetSystemApp: React.FC = () => {
   const [petSystem, setPetSystem] = useState<SaintGridPetSystem | null>(null);
   const [appState, setAppState] = useState<PetSystemAppState>({
-    currentState: PetState.Idle,
-    currentEmotion: EmotionType.Calm,
+    currentState: PetState.Awaken,  // 改为awaken状态
+    currentEmotion: EmotionType.Happy,  // 改为happy情绪
     isSystemReady: false,
     pluginStatus: '',
     rhythmMode: 'steady',
@@ -262,17 +262,7 @@ const PetSystemApp: React.FC = () => {
         </div>
       )}
 
-      {/* 状态指示器 */}
-      <div className="state-indicator">
-        {getStateText()}
-      </div>
-      
-      {/* 情绪指示器 */}
-      <div className="emotion-indicator">
-        {getEmotionText()}
-      </div>
-
-      {/* 主要的汤圆碗体 */}
+      {/* 主要的汤圆碗体 - 使用渐变背景 */}
       <div
         className={getStateClassName()}
         onMouseEnter={handleMouseEnter}
@@ -294,11 +284,33 @@ const PetSystemApp: React.FC = () => {
           pointerEvents: 'none'
         }}>
           <div style={{ fontSize: '48px', marginBottom: '8px' }}>
-            🍡
+            😊
           </div>
-          <div style={{ fontSize: '14px', opacity: 0.9 }}>
-            SaintGrid
-          </div>
+        </div>
+      </div>
+
+      {/* 左下角状态和情绪显示区域 */}
+      <div style={{
+        position: 'absolute',
+        bottom: '20px',
+        left: '20px',
+        padding: '16px',
+        background: 'rgba(0, 0, 0, 0.7)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: '12px',
+        color: 'white',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        zIndex: 10
+      }}>
+        <div style={{ marginBottom: '8px' }}>
+          状态: <span style={{ color: '#FFD700' }}>{appState.currentState === 'awaken' ? 'awaken' : appState.currentState}</span>
+        </div>
+        <div style={{ marginBottom: '8px' }}>
+          情绪: <span style={{ color: '#FF69B4' }}>{appState.currentEmotion === 'happy' ? 'happy' : appState.currentEmotion}</span>
+        </div>
+        <div>
+          互动次数: <span style={{ color: '#98FB98' }}>0</span>
         </div>
       </div>
 
@@ -312,7 +324,7 @@ const PetSystemApp: React.FC = () => {
         <div style={{
           position: 'absolute',
           bottom: '10px',
-          left: '10px',
+          right: '10px',
           background: 'rgba(0,0,0,0.8)',
           color: 'white',
           padding: '8px',
@@ -321,9 +333,8 @@ const PetSystemApp: React.FC = () => {
           maxWidth: '200px',
           pointerEvents: 'none'
         }}>
+          <div>神宠系统 v1.0 |</div>
           <div>系统: {appState.isSystemReady ? '✅ 就绪' : '⏳ 初始化'}</div>
-          <div>状态: {appState.currentState}</div>
-          <div>情绪: {appState.currentEmotion}</div>
           <div>行为: {appState.lastBehavior}</div>
           <div>节奏: {appState.rhythmMode}</div>
         </div>
