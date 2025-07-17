@@ -11,6 +11,8 @@ logs
 # 编译输出
 dist/
 build/
+dist-ui/
+*.tsbuildinfo
 
 # 环境变量
 .env
@@ -21,3 +23,11 @@ build/
 
 # 防止重复的测试文件
 src/ui/tests/test-visual-feedback.ts
+
+# 外部临时目录（已迁移到src/）
+t1-prototype/
+t2-architecture/
+t3-player/
+t4-models/
+t5-core/
+t6-ui/

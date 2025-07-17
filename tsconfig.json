@@ -40,6 +40,12 @@
   "exclude": [
     "node_modules",
     "dist",
-    "dist-ui"
+    "dist-ui",
+    "t1-prototype",
+    "t2-architecture", 
+    "t3-player",
+    "t4-models",
+    "t5-core",
+    "t6-ui"
   ]
 }

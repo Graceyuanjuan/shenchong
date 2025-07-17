@@ -10,9 +10,6 @@
  * - T6: 用户界面 (/t6-ui)
  */
 
-// 主系统类导出
-export { SaintGridPetSystem } from './SaintGridPetSystem';
-
 // 核心模块导出 (兼容现有代码)
 export { PetBrain } from './core/PetBrain';
 export { BehaviorScheduler } from './core/BehaviorScheduler';
@@ -32,8 +29,17 @@ export { default as PetSystemApp } from './PetSystemApp';
 export { AIEmotionDriver } from './modules/AIEmotionDriver';
 export { BehaviorRhythmManager } from './modules/behavior/BehaviorRhythmManager';
 
-// 类型导出 - 修正从types模块导出
-export { PetState, EmotionType } from './types';
+// 类型导出
+export type { 
+  PetState,
+  EmotionType,
+  UserIntent,
+  IPlugin,
+  PluginContext,
+  PluginResponse,
+  EmotionContext,
+  PetBrainConfig
+} from './types';
 
 console.log('🎯 神宠系统模块已重构为T1-T6阶段结构');
 console.log('📁 新模块位置:');

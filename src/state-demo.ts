@@ -139,8 +139,8 @@ class StateMachineDemo {
     console.log('📈 状态统计信息:');
     console.log(`📍 当前状态: ${this.petSystem.getCurrentState()}`);
     
-    const emotion = this.petSystem.getCurrentEmotion();
-    console.log(`😊 当前情绪: ${emotion.emotion} (强度: ${emotion.intensity.toFixed(2)})`);
+    const emotionDetails = this.petSystem.getEmotionDetails();
+    console.log(`😊 当前情绪: ${emotionDetails.emotion} (强度: ${emotionDetails.intensity.toFixed(2)})`);
     
     const recommendations = this.petSystem.getRecommendations();
     console.log(`💡 推荐操作: ${recommendations.join(', ')}`);

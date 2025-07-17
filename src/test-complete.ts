@@ -67,13 +67,13 @@ async function testBasicStateTransitions(petSystem: SaintGridPetSystem): Promise
     await petSystem.switchToState(state);
     
     const currentState = petSystem.getCurrentState();
-    const emotion = petSystem.getCurrentEmotion();
+    const emotionDetails = petSystem.getEmotionDetails();
     const actions = petSystem.getAvailableActions();
     
     console.log(`✅ 当前状态: ${currentState}`);
-    console.log(`😊 当前情绪: ${emotion.emotion} (强度: ${emotion.intensity.toFixed(2)})`);
-    console.log(`📋 可用操作: ${actions.actions.join(', ')}`);
-    console.log(`💬 状态描述: ${actions.description}`);
+    console.log(`😊 当前情绪: ${emotionDetails.emotion} (强度: ${emotionDetails.intensity.toFixed(2)})`);
+    console.log(`📋 可用操作: ${actions.join(', ')}`);
+    console.log(`💬 状态描述: 当前状态为 ${currentState}`);
     
     await delay(1500);
   }
@@ -127,8 +127,8 @@ async function testPluginTriggerMechanism(petSystem: SaintGridPetSystem): Promis
     // 等待插件触发完成
     await delay(1000);
     
-    const emotion = petSystem.getCurrentEmotion();
-    console.log(`📊 插件触发后情绪: ${emotion.emotion} (强度: ${emotion.intensity.toFixed(2)})`);
+    const emotionDetails = petSystem.getEmotionDetails();
+    console.log(`📊 插件触发后情绪: ${emotionDetails.emotion} (强度: ${emotionDetails.intensity.toFixed(2)})`);
   }
 }
 
@@ -149,12 +149,12 @@ async function testEmotionChanges(petSystem: SaintGridPetSystem): Promise<void> 
     console.log(`\n💬 测试输入: "${test.input}"`);
     console.log(`🎯 预期效果: ${test.expected}`);
     
-    const beforeEmotion = petSystem.getCurrentEmotion();
+    const beforeEmotion = petSystem.getEmotionDetails();
     console.log(`😊 输入前情绪: ${beforeEmotion.emotion} (${beforeEmotion.intensity.toFixed(2)})`);
     
     await petSystem.handleUserInput(test.input);
     
-    const afterEmotion = petSystem.getCurrentEmotion();
+    const afterEmotion = petSystem.getEmotionDetails();
     console.log(`😊 输入后情绪: ${afterEmotion.emotion} (${afterEmotion.intensity.toFixed(2)})`);
     
     await delay(1500);
@@ -176,10 +176,10 @@ function testStateStatistics(petSystem: SaintGridPetSystem): void {
   
   const availableActions = petSystem.getAvailableActions();
   console.log(`\n📋 当前可用操作:`);
-  console.log(`🎭 状态: ${availableActions.state}`);
-  console.log(`⚡ 操作: ${availableActions.actions.join(', ')}`);
-  console.log(`💬 描述: ${availableActions.description}`);
-  console.log(`😊 情绪: ${availableActions.emotion}`);
+  console.log(`🎭 当前状态: ${petSystem.getCurrentState()}`);
+  console.log(`⚡ 可用操作: ${availableActions.join(', ')}`);
+  console.log(`💬 描述: 基于当前状态和情绪的推荐操作`);
+  console.log(`😊 当前情绪: ${petSystem.getCurrentEmotion()}`);
 }
 
 /**
@@ -225,7 +225,8 @@ async function testCombinedInteractions(petSystem: SaintGridPetSystem): Promise<
   
   console.log('🎯 最终状态总结:');
   console.log(`📍 最终状态: ${finalStats.currentState}`);
-  console.log(`😊 最终情绪: ${finalEmotion.emotion} (强度: ${finalEmotion.intensity.toFixed(2)})`);
+  const finalEmotionDetails = petSystem.getEmotionDetails();
+  console.log(`😊 最终情绪: ${finalEmotionDetails.emotion} (强度: ${finalEmotionDetails.intensity.toFixed(2)})`);
   console.log(`📈 状态变化次数: ${finalStats.stateHistory.length}`);
   console.log(`🏆 最常用状态: ${finalStats.mostFrequentState}`);
 }

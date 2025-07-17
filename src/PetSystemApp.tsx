@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SaintGridPetSystem } from './index';
-import { PetState, EmotionType } from './types';
+import { SaintGridPetSystem, PetState, EmotionType } from './index';
 import { StrategyConfigPanel } from './modules/StrategyConfigUI/StrategyConfigPanel';
 
 interface PetSystemAppState {

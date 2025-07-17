@@ -3,26 +3,23 @@
  * 提供各阶段模块的统一访问接口
  */
 
-// T3-Player 播放器模块
-export { PlayerPlugin } from '../../t3-player/PlayerPlugin';
+// 核心模块导出 - 使用 src/core 下的文件
+export { PetBrain } from '../core/PetBrain';
+export { BehaviorScheduler } from '../core/BehaviorScheduler';
+export { EmotionEngine } from '../core/EmotionEngine';
+export { StateMemory } from '../core/StateMemory';
+export { PluginRegistry } from '../core/PluginRegistry';
+export { BehaviorStrategy } from '../core/BehaviorStrategy';
+export { BehaviorStrategyManager } from '../core/BehaviorStrategyManager';
 
-// T4-Models 数据模型
-export { BehaviorStrategy } from '../../t4-models/BehaviorStrategy';
-export { BehaviorStrategyManager } from '../../t4-models/BehaviorStrategyManager';
+// 插件模块
+export { PlayerPlugin } from '../plugins/PlayerPlugin';
 
-// T5-Core 核心逻辑
-export { PetBrain } from '../../t5-core/PetBrain';
-export { BehaviorScheduler } from '../../t5-core/BehaviorScheduler';
-export { EmotionEngine } from '../../t5-core/EmotionEngine';
-export { StateMemory } from '../../t5-core/StateMemory';
-export { PluginRegistry } from '../../t5-core/PluginRegistry';
-export { AIEmotionDriver } from '../../t5-core/AIEmotionDriver';
-export { BehaviorRhythmManager } from '../../t5-core/behavior/BehaviorRhythmManager';
+// AI 情绪驱动模块
+export { AIEmotionDriver } from './AIEmotionDriver';
 
-// T6-UI 用户界面
-export { PetSystemApp } from '../../t6-ui/PetSystemApp';
+// 行为节奏管理器 
+export { BehaviorRhythmManager } from './rhythm/BehaviorRhythmManager';
 
-// 兼容性导出 - 从原始位置导出仍可用的模块
-export { BehaviorStrategy as CoreBehaviorStrategy } from '../core/BehaviorStrategy';
-export { BehaviorScheduler as CoreBehaviorScheduler } from '../core/BehaviorScheduler';
-export { EmotionEngine as CoreEmotionEngine } from '../core/EmotionEngine';
+// UI 主程序
+export { default as PetSystemApp } from '../PetSystemApp';

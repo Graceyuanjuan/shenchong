@@ -599,5 +599,37 @@ export class StrategyManager {
   }
 }
 
+// 通用行为策略类 - 支持配置化创建
+export class BehaviorStrategy extends BaseBehaviorStrategy {
+  name: string;
+  description: string;
+  priority: number;
+  private canApplyFn: (context: StrategyContext) => boolean;
+  private generateBehaviorsFn: (context: StrategyContext) => BehaviorDefinition[];
+  
+  constructor(config: {
+    name: string;
+    description: string;
+    priority?: number;
+    canApply: (context: StrategyContext) => boolean;
+    generateBehaviors: (context: StrategyContext) => BehaviorDefinition[];
+  }) {
+    super();
+    this.name = config.name;
+    this.description = config.description;
+    this.priority = config.priority || 5;
+    this.canApplyFn = config.canApply;
+    this.generateBehaviorsFn = config.generateBehaviors;
+  }
+  
+  canApply(context: StrategyContext): boolean {
+    return this.canApplyFn(context);
+  }
+  
+  generateBehaviors(context: StrategyContext): BehaviorDefinition[] {
+    return this.generateBehaviorsFn(context);
+  }
+}
+
 // 兼容性别名 - 为了与 UI 组件兼容
-export type BehaviorStrategy = IBehaviorStrategy;
+export type IBehaviorStrategyType = IBehaviorStrategy;
