@@ -5,7 +5,7 @@
  * 提供情绪驱动的视频播放行为与 UI 动画的无缝集成
  */
 
-import { PetState, EmotionType, EmotionContext, PluginContext } from '../types';
+import { PetState, EmotionType } from '../types';
 import { BehaviorStrategyManager, BehaviorAction } from './BehaviorStrategyManager';
 import { BehaviorExecutionContext } from './BehaviorScheduler';
 import { PetBrainBridge } from './PetBrainBridge';
@@ -213,7 +213,7 @@ export class VideoPlaybackBehaviorIntegrator {
     behaviorResult: any, 
     context: BehaviorExecutionContext
   ): string {
-    const { emotion, state } = context;
+    const { emotion } = context;
     const videoConfig = behaviorResult.data?.videoConfig;
 
     // 根据情绪和状态组合确定动画类型
@@ -266,20 +266,21 @@ export class VideoPlaybackBehaviorIntegrator {
     context: BehaviorExecutionContext
   ): Promise<void> {
     // 注册播放控制回调
-    const playCallback = async (data: any) => {
-      console.log(`▶️ UI 播放回调: ${videoConfig.videoId}`);
-      // 这里可以触发实际的视频播放逻辑
-    };
+    // TODO: Implement actual callback usage
+    // const playCallback = async (data: any) => {
+    //   console.log(`▶️ UI 播放回调: ${videoConfig.videoId}`);
+    //   // 这里可以触发实际的视频播放逻辑
+    // };
 
-    const pauseCallback = async (data: any) => {
-      console.log(`⏸️ UI 暂停回调: ${videoConfig.videoId}`);
-      // 这里可以触发实际的视频暂停逻辑
-    };
+    // const pauseCallback = async (data: any) => {
+    //   console.log(`⏸️ UI 暂停回调: ${videoConfig.videoId}`);
+    //   // 这里可以触发实际的视频暂停逻辑
+    // };
 
-    const seekCallback = async (data: any) => {
-      console.log(`⏭️ UI 跳转回调: ${videoConfig.videoId} -> ${data.position}s`);
-      // 这里可以触发实际的视频跳转逻辑
-    };
+    // const seekCallback = async (data: any) => {
+    //   console.log(`⏭️ UI 跳转回调: ${videoConfig.videoId} -> ${data.position}s`);
+    //   // 这里可以触发实际的视频跳转逻辑
+    // };
 
     // 如果有真实的 UI 桥接器，注册回调
     if (this.uiBridge && typeof this.uiBridge.registerStrategy === 'function') {

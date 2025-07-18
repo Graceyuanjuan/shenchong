@@ -7,7 +7,6 @@ import {
   RhythmStateListener, 
   IRhythmManager
 } from '../../types/BehaviorRhythm.d';
-import { EmotionType } from '../../types';
 
 /**
  * 行为节奏管理器

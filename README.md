@@ -1,24 +1,25 @@
 # 神宠计划 Shenchong Project
 
-> 一只神宠，不是宠物。  
-> 它是你通向世界的情绪入口，是你与 AI 舰队协同的前台指挥，  
+> 一只神宠，不是宠物。
+> 它是你通向世界的情绪入口，是你与 AI 舰队协同的前台指挥，
 > 是未来人类操作系统的第一颗信任粒子。
 
 ---
 
 ## 🧭 项目简介 | About
 
-`shenchong` 是一款面向多智能体时代的桌面宠物系统，  
-由 Grace Yuan Juan 发起，融合了 **AI 编排、情绪交互、语音播放、界面拟物** 四大核心模块，  
+`shenchong` 是一款面向多智能体时代的桌面宠物系统，
+由 Grace Yuan Juan 发起，融合了 **AI 编排、情绪交互、语音播放、界面拟物** 四大核心模块，
 其目标是：让每个人都拥有一个属于自己的 AI 协作官。
 
-它不是“命令式工具”，  
-而是一个长期陪伴、主动服务、懂你习惯和状态的伙伴，  
+它不是“命令式工具”，
+而是一个长期陪伴、主动服务、懂你习惯和状态的伙伴，
 一只被情绪注入灵魂、被指令赋予能力、被AI激活的“神宠”。
 
 ---
 
 ## 🔧 模块架构 | Structure
+
 shenchong/
 ├── agent/        # 多AI智能体编排模块
 ├── player/       # 桌面语音播放器（Hover 弹出式）
@@ -47,7 +48,7 @@ SaintGrid 神宠系统是一个**感知 + 情绪驱动 + 多模输入统一**的
 
 ### 核心模块
 
-```
+```text
 src/
 ├── core/                   # 主脑核心模块
 │   ├── PetBrain.ts        # 主脑调度器（中央指令中枢）
@@ -60,9 +61,11 @@ src/
 ├── types/                 # 类型定义
 │   └── index.ts          # 核心类型和接口
 └── index.ts              # 主入口文件
-```
+```text
+
 
 ### 🧩 模块功能
+
 
 - **🧠 PetBrain**: 主脑调度器，统一管理所有模块，处理用户输入并协调响应
 - **🔌 PluginRegistry**: 插件注册器，管理插件生命周期与调用权限
@@ -76,15 +79,19 @@ src/
 
 ```bash
 npm install
-```
+```text
+
 
 ### 2. 编译项目
 
+
 ```bash
 npm run build
-```
+```text
+
 
 ### 3. 使用示例
+
 
 ```typescript
 import { SaintGridPetSystem, startPetSystemDemo } from './src';
@@ -100,14 +107,17 @@ await petSystem.start();
 await petSystem.handleUserInput('截图');
 await petSystem.handleUserInput('记录：今天学习了AI开发');
 await petSystem.handleUserInput('我很开心！');
-```
+```text
+
 
 ## 🎭 情绪系统
 
+
 ### 支持的情绪类型
 
+
 - **😊 Happy**: 开心 - 任务成功、收到赞美时
-- **😌 Calm**: 平静 - 默认状态、处理常规任务时  
+- **😌 Calm**: 平静 - 默认状态、处理常规任务时
 - **🤩 Excited**: 兴奋 - 频繁交互、复杂任务时
 - **🤔 Curious**: 好奇 - 遇到新指令、未知输入时
 - **😴 Sleepy**: 困倦 - 长时间闲置、深夜时段
@@ -124,9 +134,11 @@ await petSystem.handleUserInput('我很开心！');
   particle: 'sparkles',   // 粒子特效
   sound: 'happy_chime'    // 音效提示
 }
-```
+```text
+
 
 ## 🔌 插件系统详解
+
 
 ### 插件系统概览
 
@@ -134,16 +146,18 @@ await petSystem.handleUserInput('我很开心！');
 
 #### 插件在主脑架构中的定位
 
-```
+```text
 用户输入 → 意图识别 → 插件调度 → 状态感知 → 情绪响应 → 执行动作
      ↓            ↓           ↓          ↓          ↓          ↓
   自然语言    IntentRouter  PluginRegistry  PetState  EmotionEngine  PluginResponse
-```
+```text
+
 
 #### 插件响应的生命周期节点
 
+
 1. **状态切换触发** - 当主脑状态发生变化时自动触发
-2. **用户意图触发** - 当用户输入匹配插件意图时触发  
+2. **用户意图触发** - 当用户输入匹配插件意图时触发
 3. **状态钩子触发** - 特定状态转换时的钩子响应
 4. **情绪变化触发** - 情绪显著变化时的响应（预留）
 
@@ -154,14 +168,14 @@ await petSystem.handleUserInput('我很开心！');
 创建一个实现 `IPlugin` 接口的插件类：
 
 ```typescript
-import { 
-  IPlugin, 
-  UserIntent, 
-  PluginResponse, 
-  EmotionType, 
+import {
+  IPlugin,
+  UserIntent,
+  PluginResponse,
+  EmotionType,
   PetState,
   EmotionContext,
-  PluginContext 
+  PluginContext
 } from './src/types';
 
 export class MyPlugin implements IPlugin {
@@ -170,7 +184,7 @@ export class MyPlugin implements IPlugin {
   version = '1.0.0';
   description = '这是一个示例插件';
   supportedIntents = ['my_action'];
-  
+
   // 声明插件能力
   capabilities = {
     stateAware: true,       // 支持状态感知
@@ -195,7 +209,7 @@ export class MyPlugin implements IPlugin {
   // 状态触发方法 - 支持情绪感知
   async trigger(state: PetState, emotion: EmotionContext, context?: PluginContext): Promise<PluginResponse> {
     console.log(`[MyPlugin] 状态: ${state}, 情绪: ${emotion.currentEmotion}, 强度: ${emotion.intensity}`);
-    
+
     // 根据状态和情绪组合做出智能响应
     if (state === PetState.Awaken && emotion.currentEmotion === EmotionType.Excited) {
       return {
@@ -205,7 +219,7 @@ export class MyPlugin implements IPlugin {
         emotion: EmotionType.Happy
       };
     }
-    
+
     return {
       success: true,
       data: null,
@@ -217,7 +231,7 @@ export class MyPlugin implements IPlugin {
   // 状态变化钩子
   async onStateChanged(oldState: PetState, newState: PetState, emotion: EmotionContext, context?: PluginContext): Promise<PluginResponse> {
     console.log(`[MyPlugin] 状态变化: ${oldState} → ${newState}, 情绪: ${emotion.currentEmotion}`);
-    
+
     // 特定状态转换的智能响应
     if (oldState === PetState.Idle && newState === PetState.Awaken && emotion.intensity > 0.8) {
       return {
@@ -227,7 +241,7 @@ export class MyPlugin implements IPlugin {
         emotion: EmotionType.Focused
       };
     }
-    
+
     return {
       success: true,
       data: null,
@@ -240,9 +254,11 @@ export class MyPlugin implements IPlugin {
     console.log(`${this.name} 插件已销毁`);
   }
 }
-```
+```text
+
 
 #### 2. 注册插件
+
 
 ```typescript
 import { PetBrain } from './src/core/PetBrain';
@@ -256,7 +272,8 @@ const myPlugin = new MyPlugin();
 await brain.registerPlugin(myPlugin);
 
 console.log('插件注册完成！');
-```
+```text
+
 
 #### 3. 简化版插件示例
 
@@ -269,11 +286,11 @@ const simplePlugin = {
   version: '1.0.0',
   description: '简化版插件示例',
   supportedIntents: ['simple_action'],
-  
+
   async initialize() {
     console.log('简单插件已初始化');
   },
-  
+
   async execute(intent, context) {
     return {
       success: true,
@@ -282,7 +299,7 @@ const simplePlugin = {
       emotion: 'happy'
     };
   },
-  
+
   async trigger(state, emotion) {
     console.log(`[SimplePlugin] 在 ${state} 状态下被触发`);
     return {
@@ -292,14 +309,15 @@ const simplePlugin = {
       emotion: emotion
     };
   },
-  
+
   async destroy() {
     console.log('简单插件已销毁');
   }
 };
 
 await brain.registerPlugin(simplePlugin);
-```
+```text
+
 
 ### 状态与情绪感知表格
 
@@ -330,22 +348,28 @@ await brain.registerPlugin(simplePlugin);
 插件系统提供统一的日志格式，便于调试和监控：
 
 #### 插件触发日志
-```
+
+```text
 🎯 [插件响应] ScreenshotPlugin | 状态: awaken | 情绪: curious | 情绪感知: ✅
 ✅ [插件完成] ScreenshotPlugin | 状态: awaken | 情绪: curious | 结果: 探索截图完成
-```
+
+```text
 
 #### 状态钩子日志
-```
+
+```text
 🪝 [钩子响应] NotePlugin.onStateChanged | idle → awaken | 情绪: excited
 ✅ [钩子完成] NotePlugin | 状态钩子执行成功: 情绪记录建议已生成
-```
+```text
+
 
 #### 插件汇总日志
-```
+
+```text
 🔌 [插件汇总] 状态: awaken | 总数: 2 | 成功: 2 | 情绪感知: 2
 🪝 [钩子汇总] onStateChanged | 状态: idle → awaken | 总数: 2 | 成功: 2
-```
+
+```text
 
 #### 日志格式说明
 
@@ -362,10 +386,11 @@ await brain.registerPlugin(simplePlugin);
 状态钩子允许插件监听特定的状态转换并做出响应：
 
 ```typescript
+
 async onStateChanged(
-  oldState: PetState, 
-  newState: PetState, 
-  emotion: EmotionContext, 
+  oldState: PetState,
+  newState: PetState,
+  emotion: EmotionContext,
   context?: PluginContext
 ): Promise<PluginResponse> {
   // 监听从静态直接到唤醒的转换（可能是紧急情况）
@@ -380,7 +405,7 @@ async onStateChanged(
       };
     }
   }
-  
+
   // 从唤醒到悬浮且情绪愉快（可能刚完成任务）
   if (oldState === PetState.Awaken && newState === PetState.Hover && emotion.currentEmotion === EmotionType.Happy) {
     return {
@@ -390,7 +415,7 @@ async onStateChanged(
       emotion: EmotionType.Happy
     };
   }
-  
+
   return {
     success: true,
     data: null,
@@ -398,23 +423,25 @@ async onStateChanged(
     emotion: emotion.currentEmotion
   };
 }
-```
+
+```text
 
 #### 2. 插件状态共享（依赖注入接口）
 
 为未来的插件间状态共享预留接口设计：
 
 ```typescript
+
 export interface PluginStateManager {
   // 共享状态读取
   getSharedState(key: string): any;
-  
+
   // 共享状态写入
   setSharedState(key: string, value: any): void;
-  
+
   // 监听其他插件的状态变化
   onPluginStateChange(pluginId: string, callback: (state: any) => void): void;
-  
+
   // 插件间消息传递
   sendMessage(targetPluginId: string, message: any): Promise<any>;
 }
@@ -433,13 +460,15 @@ export interface PluginContext {
   // 未来扩展：插件状态管理
   stateManager?: PluginStateManager;
 }
-```
+
+```text
 
 #### 3. 插件能力动态检测
 
 系统会根据插件声明的能力选择最优的调用方式：
 
 ```typescript
+
 capabilities: {
   stateAware: true,      // 是否支持状态感知
   emotionAware: true,    // 是否支持情绪感知
@@ -451,7 +480,8 @@ capabilities: {
     'onHeartbeat'        // 预留：心跳钩子
   ]
 }
-```
+
+```text
 
 #### 4. 调试和开发技巧
 
@@ -461,6 +491,7 @@ capabilities: {
 - **钩子测试**: 观察状态转换时的钩子触发和响应
 
 ```typescript
+
 // 测试示例
 const brain = new PetBrain();
 await brain.initialize();
@@ -473,7 +504,8 @@ brain.emotionEngine.setEmotion(EmotionType.Excited, 0.9, 30000);
 await brain.enterAwakenState();
 
 // 观察日志输出，验证插件响应
-```
+
+```text
 
 ### 插件开发最佳实践
 
@@ -490,13 +522,14 @@ await brain.enterAwakenState();
 ### 记忆类型
 
 - **conversation**: 对话记录
-- **behavior**: 行为模式  
+- **behavior**: 行为模式
 - **preference**: 用户偏好
 - **context**: 上下文信息
 
 ### 使用记忆
 
 ```typescript
+
 // 记录用户偏好
 stateMemory.recordPreference('appearance', 'theme', 'dark', 1.0);
 
@@ -509,7 +542,8 @@ const memories = stateMemory.retrieve({
 
 // 分析使用模式
 const patterns = stateMemory.analyzeUsagePatterns();
-```
+
+```text
 
 ## 🌐 三脑模型支持
 
@@ -524,6 +558,7 @@ const patterns = stateMemory.analyzeUsagePatterns();
 ### 获取系统状态
 
 ```typescript
+
 const status = petBrain.getSystemStatus();
 console.log(status);
 // {
@@ -534,11 +569,13 @@ console.log(status);
 //   uptime: 12345,
 //   lastInteraction: 1234567890
 // }
-```
+
+```text
 
 ### 事件监听
 
 ```typescript
+
 petBrain.on('state_changed', (data) => {
   console.log(`状态变化: ${data.oldState} → ${data.newState}`);
 });
@@ -546,14 +583,15 @@ petBrain.on('state_changed', (data) => {
 petBrain.on('input_processed', (data) => {
   console.log(`处理完成: ${data.response.message}`);
 });
-```
+
+```text
 
 ## 🎯 设计理念
 
 > "神宠不是宠物，而是你与世界情绪交互的前台界面。"
 
 - **🧠 拟人情绪感知**: 通过情绪引擎实现自然的情感交互
-- **🌐 文化情境认知**: 基于东亚文化设计的汤圆形象和交互模式  
+- **🌐 文化情境认知**: 基于东亚文化设计的汤圆形象和交互模式
 - **🛠️ 多态视觉引导**: 四态模型适配不同的使用场景
 - **🔌 模块化扩展**: 插件化架构支持功能无限扩展
 
@@ -594,37 +632,39 @@ MIT License
 
 ## 🌌 关键能力 | Features
 
-- 🎙️ **语音分段播放**：自动识别情绪变化，按段播报，提高理解效率  
-- 🧠 **多智能体热插拔**：支持 GPT、Claude、DeepSeek、豆包、元宝等智能体灵活协作  
-- 🫧 **碗形交互系统**：三态设计（静止碗 / 悬浮碗 / 工具碗），用户情绪状态入口  
-- 💬 **指令即场景切换**：语音、文本、快捷拖拽，三种交互方式并存  
+- 🎙️ **语音分段播放**：自动识别情绪变化，按段播报，提高理解效率
+- 🧠 **多智能体热插拔**：支持 GPT、Claude、DeepSeek、豆包、元宝等智能体灵活协作
+- 🫧 **碗形交互系统**：三态设计（静止碗 / 悬浮碗 / 工具碗），用户情绪状态入口
+- 💬 **指令即场景切换**：语音、文本、快捷拖拽，三种交互方式并存
 - 🪢 **跨平台计划**：Mac / Windows / Electron 桌宠通用核心
 
 ---
 
 ## 💡 背后哲学 | Philosophy
 
-在未来每人都有多个 AI 助理的时代，  
+在未来每人都有多个 AI 助理的时代，
+
 **人类需要一个前台，来调度这些“看不见的后端智能”。**
 
-这个前台不能是繁杂的界面，而是一只通人性、有温度的神宠。  
+这个前台不能是繁杂的界面，而是一只通人性、有温度的神宠。
 它用“听懂你 + 代你沟通 + 帮你组织”三重能力，成为人类数字生活的主界面。
 
 ---
 
 ## 👤 作者 | Author
 
-**Grace Yuan Juan**  
-- SaintGrid 智脑系统构建者  
-- 20 年国家电网数字化项目经验  
+**Grace Yuan Juan**
+- SaintGrid 智脑系统构建者
+- 20 年国家电网数字化项目经验
 - 正在用桌宠重新定义 AI 与人的连接方式
 
 ---
 
 ## 📃 协议 | License
 
-MIT License  
+MIT License
 （代码自由，灵魂不卖）
+
 ---
 
 ## 🌍 技术架构 | Architecture
@@ -653,7 +693,9 @@ MIT License
 - [ ] GPT 与豆包双通道统一入口
 - [ ] 神宠桌宠情绪语音交互
 - [ ] 接入任务调度脚本语言（如 natural prompt → plugin routing）
+
 ## 🍡 神宠首发皮肤：一碗汤圆 | First Edition Skin: Tangyuan Bowl
+
 
 在神宠系统的第一个版本中，我们选择了一碗汤圆作为默认皮肤。
 
@@ -683,7 +725,7 @@ MIT License
 
 ## ✅ For Developers
 
-你正在构建的是一个**感知 + 情绪驱动 + 多模输入统一**的 AI 桌面引擎。  
+你正在构建的是一个**感知 + 情绪驱动 + 多模输入统一**的 AI 桌面引擎。
 当前皮肤使用“汤圆”作为情绪表达介质。你需要配合：
 
 - 🧩 使用四态状态枚举：`Idle`, `Hover`, `Awaken`, `Control`

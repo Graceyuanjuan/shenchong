@@ -69,7 +69,9 @@ const newStrategy: StrategyRecord = {
 await manager.saveStrategyToDB(newStrategy);
 ```
 
+
 ### 2. 策略查询和匹配
+
 
 ```typescript
 // 获取匹配特定状态和情绪的策略
@@ -81,7 +83,9 @@ const strategies = manager.getMatchingStrategies(
 console.log(`找到 ${strategies.length} 个匹配策略`);
 ```
 
+
 ### 3. 数据库管理
+
 
 ```typescript
 // 创建快照
@@ -97,9 +101,12 @@ if (snapshotId) {
 }
 ```
 
+
 ## 策略结构详解
 
+
 ### StrategyRecord
+
 
 ```typescript
 interface StrategyRecord {
@@ -113,7 +120,9 @@ interface StrategyRecord {
 }
 ```
 
+
 ### StrategyConditions
+
 
 ```typescript
 interface StrategyConditions {
@@ -131,7 +140,9 @@ interface StrategyConditions {
 }
 ```
 
+
 ### StrategyAction
+
 
 ```typescript
 interface StrategyAction {
@@ -145,7 +156,9 @@ interface StrategyAction {
 }
 ```
 
+
 ## 高级功能
+
 
 ### 1. 热重载
 
@@ -157,7 +170,9 @@ const manager = new BehaviorStrategyManager();
 // 策略文件变化时会自动触发重载
 ```
 
+
 ### 2. 快照管理
+
 
 ```typescript
 // 创建快照
@@ -172,7 +187,9 @@ await db.initialize();
 await manager.restoreSnapshot(snapshotId);
 ```
 
+
 ### 3. 策略验证
+
 
 ```typescript
 import { BehaviorDB } from './core/db/BehaviorDB';
@@ -187,7 +204,9 @@ if (!validation.valid) {
 }
 ```
 
+
 ### 4. 传统策略迁移
+
 
 ```typescript
 import { BehaviorDBAdapter } from './core/db/BehaviorDBAdapter';
@@ -196,9 +215,12 @@ const adapter = new BehaviorDBAdapter();
 await adapter.initialize(); // 自动迁移现有策略
 ```
 
+
 ## 内置策略类型
 
+
 ### 状态相关策略
+
 
 - **控制状态 (Control)**: 激活生产力工具，专注模式
 - **唤醒状态 (Awaken)**: 探索行为，高能互动
@@ -234,9 +256,12 @@ src/
     └── sample-strategy.json       # 示例策略
 ```
 
+
 ## 配置选项
 
+
 ### 数据库配置
+
 
 ```typescript
 // 自定义数据库路径
@@ -247,7 +272,9 @@ const db = new BehaviorDB('./strategies.json');
 // 热重载配置在构造函数中自动设置
 ```
 
+
 ### 策略执行配置
+
 
 ```typescript
 // 策略执行时可以配置执行上下文
@@ -267,9 +294,12 @@ const context: BehaviorExecutionContext = {
 };
 ```
 
+
 ## 最佳实践
 
+
 ### 1. 策略设计
+
 
 - **明确的ID命名**: 使用描述性的策略ID
 - **合理的优先级**: 重要策略使用高优先级 (8-10)
@@ -293,7 +323,9 @@ try {
 }
 ```
 
+
 ### 4. 数据安全
+
 
 - **定期备份**: 使用快照功能定期备份
 - **版本控制**: 将策略文件纳入版本控制
@@ -319,9 +351,12 @@ BehaviorDB 提供详细的控制台日志：
 🔄 检测到策略变更，正在重新加载...
 ```
 
+
 ## API 参考
 
+
 ### BehaviorStrategyManager
+
 
 - `saveStrategyToDB(strategy)`: 保存策略到数据库
 - `removeStrategyFromDB(id)`: 从数据库删除策略

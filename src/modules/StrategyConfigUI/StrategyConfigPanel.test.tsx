@@ -2,7 +2,6 @@
  * StrategyConfigPanel 组件测试
  */
 
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { StrategyConfigPanel } from './StrategyConfigPanel';

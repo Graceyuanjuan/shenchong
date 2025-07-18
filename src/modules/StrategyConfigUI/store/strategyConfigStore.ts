@@ -3,7 +3,7 @@
  * 使用简单的状态管理模式来管理策略配置
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 export interface StrategyConfig {
   id: string;

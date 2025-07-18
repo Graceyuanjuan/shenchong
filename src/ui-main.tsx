@@ -1,7 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import PetSystemApp from './PetSystemApp'
+import PetSystemApp from './PetSystemApp-Simple'
 import './ui-styles.css'
+import './circular-pet-styles.css'
 
 // 扩展 Window 接口以包含 electronAPI
 declare global {

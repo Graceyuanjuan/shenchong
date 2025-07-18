@@ -5,7 +5,7 @@
  * 支持优先级排序、延时执行、异步链执行和动态扩展
  */
 
-import { PetState, EmotionType, EmotionContext, PluginContext } from '../types';
+import { PetState, EmotionType } from '../types';
 import { BehaviorExecutionContext } from './BehaviorScheduler';
 import { VisualFeedbackManager, VisualCueType } from './visual/VisualFeedbackManager';
 import { BehaviorRhythmManager } from './behavior/BehaviorRhythmManager';
@@ -77,12 +77,13 @@ export interface StrategyExecutionStats {
 export class BehaviorStrategyManager {
   private strategies: Map<string, BehaviorStrategyRule> = new Map();
   private executionStats: Map<string, StrategyExecutionStats> = new Map();
-  private executionQueue: Array<{
-    rule: BehaviorStrategyRule;
-    context: BehaviorExecutionContext;
-    timestamp: number;
-  }> = [];
-  private isProcessing: boolean = false;
+  // Reserved for future implementation
+  // private executionQueue: Array<{
+  //   rule: BehaviorStrategyRule;
+  //   context: BehaviorExecutionContext;
+  //   timestamp: number;
+  // }> = [];
+  // private isProcessing: boolean = false;
   
   // T4-C: 视觉反馈管理器
   private visualFeedbackManager?: VisualFeedbackManager;
@@ -226,8 +227,8 @@ export class BehaviorStrategyManager {
   /**
    * T5-A: 创建动作执行器
    */
-  private createActionExecutor(action: any): (context: BehaviorExecutionContext) => Promise<BehaviorActionResult> {
-    return async (context: BehaviorExecutionContext) => {
+  private createActionExecutor(action: any): (_context: BehaviorExecutionContext) => Promise<BehaviorActionResult> {
+    return async (_context: BehaviorExecutionContext) => {
       try {
         console.log(`🎬 [策略] ${action.type} - ${action.description || '执行动作'}`);
         

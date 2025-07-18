@@ -7,6 +7,7 @@
 ## 核心实现
 
 ### 主要文件
+
 - `src/modules/rhythm/RhythmAdaptationEngine.ts` - 核心引擎实现
 - `src/core/BehaviorScheduler.ts` - 集成点，将引擎集成到行为调度器
 - `src/test-rhythm-adaptation-engine.test.ts` - 完整测试套件
@@ -14,6 +15,7 @@
 ### 核心功能
 
 #### 1. 节奏模式选择算法
+
 按优先级实现了以下规则：
 
 1. **爆发式交互** → `pulse` 模式（最高优先级）
@@ -27,12 +29,14 @@
 9. **默认回退** → `steady` 模式
 
 #### 2. 交互统计与历史管理
+
 - 实时跟踪最近1分钟内的交互频率
 - 计算准确的空闲时间
 - 维护情绪历史记录
 - 支持交互时间戳记录
 
 #### 3. 集成架构
+
 - 与`BehaviorScheduler`无缝集成
 - 与`BehaviorRhythmManager`协作
 - 支持状态重置和引擎销毁
@@ -48,16 +52,19 @@ interface AdaptationConfig {
 }
 ```
 
+
 ## 测试覆盖
 
 实现了17个全面的测试用例，包括：
 
 ### 基础功能测试
+
 - 引擎初始化
 - 上下文更新
 - 节奏获取
 
 ### 节奏切换逻辑测试
+
 - 高频点击 + 兴奋 → pulse
 - 平静 + 长时间空闲 → sequence
 - 专注 → adaptive
@@ -65,15 +72,18 @@ interface AdaptationConfig {
 - 困倦 → steady
 
 ### 边界条件测试
+
 - 超高频交互 → pulse
 - 困倦 + 短时间空闲 → sequence
 
 ### 状态管理测试
+
 - 情绪历史跟踪
 - 交互统计
 - 状态重置
 
 ### 任务卡验证测试
+
 - 所有需求场景的端到端验证
 
 ## 技术特点
@@ -102,6 +112,7 @@ rhythmEngine.updateRhythmByContext(
 const currentRhythm = rhythmEngine.getCurrentRhythm();
 this.rhythmManager.setRhythm(currentRhythm);
 ```
+
 
 ## 验收标准达成
 

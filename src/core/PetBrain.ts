@@ -11,7 +11,6 @@ import {
   PluginResponse, 
   PetBrainConfig,
   AIProvider,
-  EmotionContext,
   PluginContext 
 } from '../types';
 
@@ -419,7 +418,7 @@ export class PetBrain {
   /**
    * 基于状态更新情绪
    */
-  private async updateEmotionForState(newState: PetState, oldState: PetState): Promise<void> {
+  private async _updateEmotionForState(newState: PetState, oldState: PetState): Promise<void> {
     console.log(`😊 Updating emotion for state: ${newState}`);
     
     switch (newState) {
@@ -460,7 +459,7 @@ export class PetBrain {
   /**
    * 触发所有插件的状态响应 - 增强版：支持情绪感知
    */
-  private async triggerPluginsForState(state: PetState): Promise<void> {
+  private async _triggerPluginsForState(state: PetState): Promise<void> {
     console.log(`🔌 [插件触发] 状态: ${state} | 开始触发所有插件`);
     
     const allPlugins = this.pluginRegistry.getAllPlugins();
@@ -490,7 +489,7 @@ export class PetBrain {
     for (const plugin of allPlugins) {
       // 检查插件能力
       const isEmotionAware = plugin.capabilities?.emotionAware || false;
-      const isStateAware = plugin.capabilities?.stateAware || false;
+      // const isStateAware = plugin.capabilities?.stateAware || false;  // Reserved for future use
       
       if (typeof plugin.trigger === 'function') {
         console.log(`🎯 [插件响应] ${plugin.name} | 状态: ${state} | 情绪: ${currentEmotion.currentEmotion} | 情绪感知: ${isEmotionAware ? '✅' : '❌'}`);
@@ -559,7 +558,7 @@ export class PetBrain {
   /**
    * 触发插件的 onStateChanged 钩子
    */
-  private async triggerStateChangedHooks(oldState: PetState, newState: PetState): Promise<void> {
+  private async _triggerStateChangedHooks(oldState: PetState, newState: PetState): Promise<void> {
     console.log(`🪝 [状态钩子] 状态变化: ${oldState} → ${newState} | 开始触发 onStateChanged 钩子`);
     
     const allPlugins = this.pluginRegistry.getAllPlugins();

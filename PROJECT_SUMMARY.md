@@ -62,6 +62,7 @@
 ## 🌟 核心特性实现
 
 ### 1. 四态交互模型
+
 ```typescript
 enum PetState {
   Idle = 'idle',           // 静碗 - 默认状态
@@ -69,32 +70,39 @@ enum PetState {
   Awaken = 'awaken',       // 唤醒碗 - 左键点击
   Control = 'control'      // 控制碗 - 右键点击
 }
-```
+
+```text
 
 ### 2. 情绪驱动系统
+
 - 实时情绪分析和状态切换
 - 基于用户交互的情绪学习
 - 情绪表现和UI建议生成
 
 ### 3. 三脑模型支持
+
 ```typescript
 enum AIProvider {
   // 新加坡主脑
   OpenAI = 'openai', Claude = 'claude',
-  // 中国左脑  
+  // 中国左脑
   Tongyi = 'tongyi', Doubao = 'doubao', Wenxin = 'wenxin',
   // 海外右脑
   GPT4 = 'gpt4', Gemini = 'gemini', LLaMA = 'llama'
 }
-```
+```text
+
 
 ### 4. 插件化架构
+
 - 标准 IPlugin 接口
+
 - 热插拔支持
 - 生命周期管理
 - 错误处理和降级
 
 ### 5. 记忆和学习系统
+
 - 对话上下文记忆
 - 用户行为模式分析
 - 个性化偏好学习
@@ -102,7 +110,7 @@ enum AIProvider {
 
 ## 🛠️ 项目结构
 
-```
+```text
 src/
 ├── core/                   # 🧠 主脑核心模块
 │   ├── PetBrain.ts        # 主脑调度器
@@ -115,9 +123,11 @@ src/
 ├── types/                 # 📝 类型定义
 │   └── index.ts          # 核心接口
 └── index.ts              # 🚀 系统入口
-```
+```text
+
 
 ## 🎨 使用示例
+
 
 ```typescript
 import { SaintGridPetSystem } from './src';
@@ -135,31 +145,39 @@ await petSystem.handleUserInput('我有点累了');
 const status = petSystem.getSystemStatus();
 const emotion = petSystem.getCurrentEmotion();
 const recommendations = petSystem.getRecommendations();
-```
+```text
+
 
 ## 🎯 设计亮点
 
+
 ### 1. 模块化设计
+
 - 每个核心功能独立成模块
+
 - 清晰的接口定义和依赖关系
 - 便于测试、维护和扩展
 
 ### 2. 事件驱动架构
+
 - 松耦合的模块通信
 - 实时状态同步
 - 易于添加新的事件监听器
 
 ### 3. 情绪化交互
+
 - 六种细粒度情绪状态
 - 基于上下文的情绪转换
 - 视觉反馈和动画建议
 
 ### 4. 智能记忆系统
+
 - 多维度数据存储
 - 重要性评分算法
 - 自动清理和优化
 
 ### 5. 渐进式增强
+
 - 基础功能完整可用
 - 支持动态插件加载
 - 向后兼容的扩展机制
@@ -167,22 +185,26 @@ const recommendations = petSystem.getRecommendations();
 ## 🚀 下一步扩展方向
 
 ### UI 层集成
+
 - 配合 Electron 或 Web Components
 - 实现汤圆动画和四态视觉效果
 - 添加拖拽、悬浮等桌面交互
 
 ### AI 模型集成
+
 - 接入真实的 LLM API
 - 实现多模态输入（语音、图像）
 - 添加更智能的意图识别
 
 ### 更多插件
+
 - 文件管理插件
 - 系统监控插件
 - 网络工具插件
 - 社交分享插件
 
 ### 跨平台支持
+
 - macOS、Windows、Linux 桌面版
 - 移动端适配
 - 云端同步功能

@@ -37,12 +37,13 @@ export interface IBehaviorSchedulingManager {
  */
 export class BehaviorSchedulingIntegrator implements IBehaviorSchedulingManager {
   private behaviorScheduler: BehaviorScheduler;
-  private emotionEngine: any;
-  private pluginRegistry: any;
+  // Reserved for future emotion integration
+  // private emotionEngine: any;
+  // private pluginRegistry: any;
   
   constructor(emotionEngine?: any, pluginRegistry?: any) {
-    this.emotionEngine = emotionEngine;
-    this.pluginRegistry = pluginRegistry;
+    // this.emotionEngine = emotionEngine;
+    // this.pluginRegistry = pluginRegistry;
     this.behaviorScheduler = new BehaviorScheduler(emotionEngine, pluginRegistry);
     
     console.log('🎭 BehaviorSchedulingIntegrator 初始化完成');

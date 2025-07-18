@@ -5,9 +5,9 @@
 中国同事反馈代码运行时出现错误：
 
 ```text
-Uncaught SyntaxError: The requested module '/src/core/BehaviorStrategy.ts' 
+Uncaught SyntaxError: The requested module '/src/core/BehaviorStrategy.ts'
 does not provide an export named 'BehaviorStrategy'
-```
+```text
 
 ## 问题根因分析
 
@@ -43,7 +43,7 @@ export class BehaviorStrategy extends BaseBehaviorStrategy {
   priority: number;
   private canApplyFn: (context: StrategyContext) => boolean;
   private generateBehaviorsFn: (context: StrategyContext) => BehaviorDefinition[];
-  
+
   constructor(config: {
     name: string;
     description: string;
@@ -58,16 +58,16 @@ export class BehaviorStrategy extends BaseBehaviorStrategy {
     this.canApplyFn = config.canApply;
     this.generateBehaviorsFn = config.generateBehaviors;
   }
-  
+
   canApply(context: StrategyContext): boolean {
     return this.canApplyFn(context);
   }
-  
+
   generateBehaviors(context: StrategyContext): BehaviorDefinition[] {
     return this.generateBehaviorsFn(context);
   }
 }
-```
+```text
 
 ### 2. 保持向后兼容性
 
@@ -82,15 +82,15 @@ export class BehaviorStrategy extends BaseBehaviorStrategy {
 ```bash
 npm run build
 ✅ 编译成功，0 个错误
-```
+```text
 
 ### 2. 开发服务器启动
 
 ```bash
 npm run dev:full
 ✅ TypeScript 监视模式: 找到 0 个错误
-✅ Vite 开发服务器: http://localhost:3000/ 正常运行
-```
+✅ Vite 开发服务器:<http://localhost:3000> 正常运行
+```text
 
 ### 3. 浏览器访问
 
@@ -125,7 +125,7 @@ const customStrategy = new BehaviorStrategy({
     }
   ]
 });
-```
+```text
 
 ### 2. 继承扩展
 
@@ -136,16 +136,16 @@ class MyCustomStrategy extends BaseBehaviorStrategy {
   name = 'MyCustom';
   description = '我的自定义策略';
   priority = 6;
-  
+
   canApply(context: StrategyContext): boolean {
     return context.emotion === EmotionType.Happy;
   }
-  
+
   generateBehaviors(context: StrategyContext): BehaviorDefinition[] {
     return [...];
   }
 }
-```
+```text
 
 ### 3. 接口实现
 
@@ -155,7 +155,7 @@ import { IBehaviorStrategy } from './core/BehaviorStrategy';
 class AnotherStrategy implements IBehaviorStrategy {
   // ... 实现接口方法
 }
-```
+```text
 
 ## 修复文件清单
 
@@ -180,6 +180,6 @@ class AnotherStrategy implements IBehaviorStrategy {
 
 ---
 
-*报告生成时间: 2025年7月17日*  
-*修复版本: T6-E*  
+*报告生成时间: 2025年7月17日*
+*修复版本: T6-E*
 *Git Commit: 13a9885*

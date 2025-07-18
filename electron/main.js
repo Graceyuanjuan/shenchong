@@ -1,19 +1,34 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
 const isDev = process.env.NODE_ENV === 'development';
 
 let mainWindow;
 
 function createWindow() {
-  // 创建桌宠窗口
+  // 获取屏幕尺寸
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+  
+  // 圆形桌宠窗口尺寸 - 更小更圆润
+  const windowSize = 160; // 进一步缩小窗口
+  
+  // 计算右下角位置 (留出一些边距)
+  const x = screenWidth - windowSize - 20;
+  const y = screenHeight - windowSize - 20;
+
+  // 创建圆形桌宠窗口 - 豆包风格圆润设计
   mainWindow = new BrowserWindow({
-    width: 400,
-    height: 400,
+    width: windowSize,
+    height: windowSize,
+    x: x,
+    y: y,
     frame: false, // 无边框窗口
     transparent: true, // 透明窗口
     alwaysOnTop: true, // 始终置顶
     resizable: false,
     movable: true,
+    skipTaskbar: true, // 不显示在任务栏
+    roundedCorners: true, // macOS圆角支持
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

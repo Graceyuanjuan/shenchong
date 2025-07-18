@@ -67,6 +67,7 @@
   "dependencies": {
     "chokidar": "^4.0.3",
     "lowdb": "^7.0.1",
+    "markdownlint-cli": "^0.45.0",
     "zod": "^4.0.5"
   }
 }

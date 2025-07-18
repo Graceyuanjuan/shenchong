@@ -392,8 +392,9 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                 </button>
               </div>
               <div style={{ marginBottom: '8px' }}>
-                <label style={{ display: 'block', marginBottom: '4px' }}>Behavior Name:</label>
+                <label htmlFor={`behavior-name-${index}`} style={{ display: 'block', marginBottom: '4px' }}>Behavior Name:</label>
                 <input
+                  id={`behavior-name-${index}`}
                   type="text"
                   value={action.behaviorName}
                   onChange={(e) => updateAction(index, { ...action, behaviorName: e.target.value })}
@@ -406,8 +407,9 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '4px' }}>Weight:</label>
+                <label htmlFor={`weight-${index}`} style={{ display: 'block', marginBottom: '4px' }}>Weight:</label>
                 <input
+                  id={`weight-${index}`}
                   type="number"
                   min="0"
                   max="10"

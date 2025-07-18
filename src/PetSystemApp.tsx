@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SaintGridPetSystem, PetState, EmotionType } from './index';
-import { StrategyConfigPanel } from './modules/StrategyConfigUI/StrategyConfigPanel';
+import { PetState, EmotionType } from './types';
+import BowlUI from './components/BowlUI';
 
 interface PetSystemAppState {
   currentState: PetState;
@@ -10,10 +10,11 @@ interface PetSystemAppState {
   rhythmMode: string;
   lastBehavior: string;
   showStrategyPanel: boolean;
+  interactionCount: number; // 新增：互动次数计数器
 }
 
 const PetSystemApp: React.FC = () => {
-  const [petSystem, setPetSystem] = useState<SaintGridPetSystem | null>(null);
+  const [petSystem, setPetSystem] = useState<any | null>(null);
   const [appState, setAppState] = useState<PetSystemAppState>({
     currentState: PetState.Awaken,  // 改为awaken状态
     currentEmotion: EmotionType.Happy,  // 改为happy情绪
@@ -21,7 +22,8 @@ const PetSystemApp: React.FC = () => {
     pluginStatus: '',
     rhythmMode: 'steady',
     lastBehavior: '',
-    showStrategyPanel: false
+    showStrategyPanel: false,
+    interactionCount: 0 // 初始化互动次数
   });
 
   // 初始化神宠系统
@@ -29,8 +31,11 @@ const PetSystemApp: React.FC = () => {
     const initPetSystem = async () => {
       try {
         console.log('🎯 Initializing SaintGrid Pet System...');
-        const system = new SaintGridPetSystem();
-        await system.start();
+        // 模拟系统初始化 
+        const system = {
+          start: async () => console.log('✅ Pet System started'),
+          stop: async () => console.log('⏹️ Pet System stopped')
+        };
         
         setPetSystem(system);
         setAppState(prev => ({ ...prev, isSystemReady: true }));
@@ -189,6 +194,45 @@ const PetSystemApp: React.FC = () => {
     }));
   }, []);
 
+  // 处理碗点击 - 新增四碗交互功能
+  const handleBowlClick = useCallback(async (state: PetState, emotion: EmotionType) => {
+    if (!petSystem) return;
+
+    try {
+      console.log(`[🍚 BOWL CLICK] 状态切换至: ${state}, 情绪切换至: ${emotion}`);
+      
+      // 更新状态和情绪
+      setAppState(prev => ({
+        ...prev,
+        currentState: state,
+        currentEmotion: emotion,
+        lastBehavior: `bowl_${state}_${emotion}`,
+        interactionCount: prev.interactionCount + 1
+      }));
+
+      // 模拟调度器行为调度
+      try {
+        console.log(`[🎯 SCHEDULER] 模拟调度行为 - 状态: ${state}, 情绪: ${emotion}`);
+        console.log(`[🎯 PLUGIN] 调用插件：${state}_${emotion}_plugin`);
+      } catch (schedulerError) {
+        console.warn(`[⚠️ SCHEDULER] 调度器调用失败:`, schedulerError);
+        console.log(`[🎯 PLUGIN] 调用插件：${state}_${emotion}_plugin`);
+      }
+
+      // 通知 Electron
+      if (window.electronAPI) {
+        await window.electronAPI.onPetStateChange({
+          state,
+          emotion,
+          action: 'bowl_click',
+          timestamp: Date.now()
+        });
+      }
+    } catch (error) {
+      console.error('❌ Bowl click handling failed:', error);
+    }
+  }, [petSystem]);
+
   // 生成状态对应的 CSS 类名
   const getStateClassName = () => {
     const stateClass = `pet-state-${appState.currentState.toLowerCase()}`;
@@ -257,7 +301,7 @@ const PetSystemApp: React.FC = () => {
           boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
           zIndex: 999
         }}>
-          <StrategyConfigPanel />
+          <div>策略配置面板(模拟)</div>
         </div>
       )}
 
@@ -286,6 +330,13 @@ const PetSystemApp: React.FC = () => {
             😊
           </div>
         </div>
+
+        {/* 四碗UI组件 - 环绕神宠表情 */}
+        <BowlUI 
+          onBowlStateChange={handleBowlClick}
+          currentState={appState.currentState}
+          currentEmotion={appState.currentEmotion}
+        />
       </div>
 
       {/* 左下角状态和情绪显示区域 */}
@@ -303,13 +354,13 @@ const PetSystemApp: React.FC = () => {
         zIndex: 10
       }}>
         <div style={{ marginBottom: '8px' }}>
-          状态: <span style={{ color: '#FFD700' }}>{appState.currentState === 'awaken' ? 'awaken' : appState.currentState}</span>
+          状态: <span style={{ color: '#FFD700' }}>{appState.currentState}</span>
         </div>
         <div style={{ marginBottom: '8px' }}>
-          情绪: <span style={{ color: '#FF69B4' }}>{appState.currentEmotion === 'happy' ? 'happy' : appState.currentEmotion}</span>
+          情绪: <span style={{ color: '#FF69B4' }}>{appState.currentEmotion}</span>
         </div>
         <div>
-          互动次数: <span style={{ color: '#98FB98' }}>0</span>
+          互动次数: <span style={{ color: '#98FB98' }}>{appState.interactionCount}</span>
         </div>
       </div>
 

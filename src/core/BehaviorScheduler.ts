@@ -6,7 +6,7 @@
 import { PetState, EmotionType, EmotionContext, PluginContext } from '../types';
 import { StrategyManager, StrategyContext, IBehaviorStrategy } from './BehaviorStrategy';
 import { BehaviorRhythmManager } from '../modules/rhythm/BehaviorRhythmManager';
-import { RhythmMode, type RhythmTickCallback } from '../types/BehaviorRhythm';
+import { RhythmMode } from '../types/BehaviorRhythm';
 import { RhythmAdaptationEngine, createRhythmAdaptationEngine } from '../modules/rhythm/RhythmAdaptationEngine';
 
 type RhythmModeType = typeof RhythmMode[keyof typeof RhythmMode];
@@ -81,8 +81,8 @@ export interface BehaviorExecutionResult {
  */
 export class BehaviorScheduler {
   private behaviorRules: BehaviorRuleMap;
-  private activeBehaviors: Map<string, BehaviorDefinition> = new Map();
-  private behaviorQueue: BehaviorDefinition[] = [];
+  // private activeBehaviors: Map<string, BehaviorDefinition> = new Map(); // 预留for未来功能
+  // private behaviorQueue: BehaviorDefinition[] = []; // 预留for未来功能
   private scheduledBehaviors: Map<string, NodeJS.Timeout> = new Map();
   private sessionId: string = '';
   private strategyManager: StrategyManager;
@@ -628,7 +628,7 @@ export class BehaviorScheduler {
   /**
    * 查找匹配的行为规则
    */
-  private findMatchingBehaviors(state: PetState, emotion: EmotionType, context?: PluginContext): BehaviorDefinition[] {
+  private findMatchingBehaviors(state: PetState, emotion: EmotionType, _context?: PluginContext): BehaviorDefinition[] {
     // 从规则映射表中获取匹配的行为
     const behaviors = this.behaviorRules[state]?.[emotion] || [];
     
@@ -794,7 +794,7 @@ export class BehaviorScheduler {
   /**
    * 节拍回调 - 在节拍器节拍时调用
    */
-  private onRhythmTick(timestamp: number, interval: number): void {
+  private onRhythmTick(_timestamp: number, interval: number): void {
     // 可以在这里添加基于节拍的行为逻辑
     // 比如定期检查状态变化、触发周期性行为等
     if (process.env.NODE_ENV === 'development') {

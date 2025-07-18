@@ -10,7 +10,7 @@
 
 ```bash
 npm run dev:full
-```
+```text
 
 这个命令会同时启动：
 - TypeScript编译监视
@@ -22,12 +22,12 @@ npm run dev:full
 **终端1**: 启动TypeScript编译
 ```bash
 npm run dev
-```
+```text
 
 **终端2**: 启动UI服务器
 ```bash
 npm run ui:dev
-```
+```text
 
 ## 🖥️ 预期界面
 
@@ -35,7 +35,7 @@ npm run ui:dev
 - 🎯 圆形彩色界面
 - 😊 可爱的表情符号
 - 📊 状态显示：awaken
-- 💚 情绪显示：happy  
+- 💚 情绪显示：happy
 - 🔧 开发者工具面板
 - 🎛️ 可交互的控制按钮
 
@@ -45,17 +45,17 @@ npm run ui:dev
 
 ```bash
 # 检查Vite服务器是否启动
-curl http://localhost:3000
+curl<http://localhost:300>
 # 或
-curl http://localhost:5173
-```
+curl<http://localhost:517>
+```text
 
 ### 检查进程状态
 
 ```bash
 # 查看是否有Vite进程运行
 ps aux | grep vite
-```
+```text
 
 ### 重新启动
 
@@ -67,17 +67,17 @@ pkill -f tsc
 
 # 重新启动
 npm run dev:full
-```
+```text
 
 ## 🌐 浏览器访问 (备选)
 
 如果Electron界面有问题，可以直接在浏览器中访问：
 
-```
+```text
 http://localhost:3000
 或
 http://localhost:5173
-```
+```text
 
 ## 📞 故障排除
 
@@ -89,11 +89,13 @@ http://localhost:5173
    ```
 
 2. **检查构建状态**:
+
    ```bash
    npm run build    # 应该无错误完成
    ```
 
 3. **查看错误日志**:
+
    ```bash
    npm run dev:full 2>&1 | tee startup.log
    ```
@@ -106,9 +108,10 @@ http://localhost:5173
 ## ✅ 成功标志
 
 看到以下输出表示启动成功：
-```
+
+```text
 > vite
-Local:   http://localhost:3000/
+Local:  <http://localhost:3000>
 Network: use --host to expose
 ✅ SaintGrid Pet System UI Rendered
-```
+```text
