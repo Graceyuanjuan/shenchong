@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { PetState, EmotionType } from './types';
-import BowlUI from './components/BowlUI';
+import PetBowl from './components/PetBowl';
+import './index.css';
 
 interface PetSystemAppState {
   currentState: PetState;
@@ -8,7 +9,7 @@ interface PetSystemAppState {
   isSystemReady: boolean;
   pluginStatus: string;
   rhythmMode: string;
-  lastBehavior: string;
+  behavior: string;
   showStrategyPanel: boolean;
   interactionCount: number; // 新增：互动次数计数器
 }
@@ -21,7 +22,7 @@ const PetSystemApp: React.FC = () => {
     isSystemReady: false,
     pluginStatus: '',
     rhythmMode: 'steady',
-    lastBehavior: '',
+    behavior: '',
     showStrategyPanel: false,
     interactionCount: 0 // 初始化互动次数
   });
@@ -305,64 +306,79 @@ const PetSystemApp: React.FC = () => {
         </div>
       )}
 
-      {/* 主要的汤圆碗体 - 使用渐变背景 */}
-      <div
-        className={getStateClassName()}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onClick={handleLeftClick}
-        onContextMenu={handleRightClick}
-        title={`状态: ${appState.currentState} | 情绪: ${appState.currentEmotion}`}
-      >
-        {/* 汤圆内容区域 */}
+      {/* 网页端显示功能提示 */}
+      {!window.electronAPI && (
         <div style={{
           position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          textAlign: 'center',
-          color: 'white',
+          top: '20px',
+          left: '20px',
+          padding: '16px',
+          background: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: '12px',
+          color: '#333',
+          fontSize: '14px',
           fontWeight: 'bold',
-          textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-          pointerEvents: 'none'
+          zIndex: 10,
+          maxWidth: '300px'
         }}>
-          <div style={{ fontSize: '48px', marginBottom: '8px' }}>
-            😊
+          <div style={{ marginBottom: '12px', fontSize: '16px', color: '#007ACC' }}>
+            🎯 SaintGrid Pet System
+          </div>
+          <div style={{ marginBottom: '8px' }}>
+            🖱️ <strong>悬停</strong>：显示语音控制
+          </div>
+          <div style={{ marginBottom: '8px' }}>
+            👆 <strong>左键</strong>：快捷操作面板
+          </div>
+          <div style={{ marginBottom: '8px' }}>
+            🖱️ <strong>右键</strong>：系统设置菜单
+          </div>
+          <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+            当前：{appState.currentState} | {appState.currentEmotion}
           </div>
         </div>
+      )}
 
-        {/* 四碗UI组件 - 环绕神宠表情 */}
-        <BowlUI 
-          onBowlStateChange={handleBowlClick}
-          currentState={appState.currentState}
-          currentEmotion={appState.currentEmotion}
-        />
-      </div>
+      {/* 主要的神宠UI - 使用PetBowl组件 */}
+      <PetBowl />
 
-      {/* 左下角状态和情绪显示区域 */}
-      <div style={{
-        position: 'absolute',
-        bottom: '20px',
-        left: '20px',
-        padding: '16px',
-        background: 'rgba(0, 0, 0, 0.7)',
-        backdropFilter: 'blur(10px)',
-        borderRadius: '12px',
-        color: 'white',
-        fontSize: '14px',
-        fontWeight: 'bold',
-        zIndex: 10
-      }}>
-        <div style={{ marginBottom: '8px' }}>
-          状态: <span style={{ color: '#FFD700' }}>{appState.currentState}</span>
+      {/* 桌面端隐藏状态信息，网页端在右下角显示 */}
+      {!window.electronAPI && (
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '20px',
+          padding: '12px',
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '8px',
+          color: 'white',
+          fontSize: '12px',
+          fontWeight: 'bold',
+          zIndex: 10
+        }}>
+          <div>互动次数: <span style={{ color: '#98FB98' }}>{appState.interactionCount}</span></div>
         </div>
-        <div style={{ marginBottom: '8px' }}>
-          情绪: <span style={{ color: '#FF69B4' }}>{appState.currentEmotion}</span>
+      )}
+
+      {/* 桌面端隐藏状态信息，网页端在右下角显示 */}
+      {!window.electronAPI && (
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          right: '20px',
+          padding: '12px',
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '8px',
+          color: 'white',
+          fontSize: '12px',
+          fontWeight: 'bold',
+          zIndex: 10
+        }}>
+          <div>互动次数: <span style={{ color: '#98FB98' }}>{appState.interactionCount}</span></div>
         </div>
-        <div>
-          互动次数: <span style={{ color: '#98FB98' }}>{appState.interactionCount}</span>
-        </div>
-      </div>
+      )}
 
       {/* 插件状态指示器 */}
       <div className={`plugin-indicator ${appState.pluginStatus ? 'show' : ''}`}>
@@ -385,7 +401,7 @@ const PetSystemApp: React.FC = () => {
         }}>
           <div>神宠系统 v1.0 |</div>
           <div>系统: {appState.isSystemReady ? '✅ 就绪' : '⏳ 初始化'}</div>
-          <div>行为: {appState.lastBehavior}</div>
+          <div>行为: {appState.behavior}</div>
           <div>节奏: {appState.rhythmMode}</div>
         </div>
       )}

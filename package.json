@@ -14,7 +14,7 @@
     "ui:dev": "vite",
     "ui:build": "vite build",
     "ui:preview": "vite preview",
-    "electron:dev": "concurrently \"npm run ui:dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:dev": "concurrently \"npm run ui:dev\" \"wait-on http://localhost:3000 && NODE_ENV=development electron .\"",
     "electron:build": "npm run ui:build && electron-builder",
     "dev:full": "concurrently \"npm run dev\" \"npm run ui:dev\"",
     "system:test": "node dist/test-system-run.js",
@@ -36,6 +36,7 @@
   "author": "SaintGrid Team",
   "license": "MIT",
   "devDependencies": {
+    "@tailwindcss/postcss7-compat": "^2.2.17",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -44,11 +45,13 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^9.8.8",
     "concurrently": "^8.2.2",
     "electron": "^28.2.1",
     "electron-builder": "^24.9.1",
     "jest": "^30.0.4",
     "jest-environment-jsdom": "^30.0.4",
+    "postcss": "^7.0.39",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "ts-jest": "^29.4.0",
@@ -65,9 +68,12 @@
   },
   "homepage": "https://github.com/saintgrid/pet-system#readme",
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "chokidar": "^4.0.3",
+    "framer-motion": "^12.23.6",
     "lowdb": "^7.0.1",
     "markdownlint-cli": "^0.45.0",
+    "tailwindcss": "^4.1.11",
     "zod": "^4.0.5"
   }
 }

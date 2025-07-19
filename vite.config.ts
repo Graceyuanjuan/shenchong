@@ -9,7 +9,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@ui': path.resolve(__dirname, './src/ui'),
-      '@components': path.resolve(__dirname, './src/ui/components')
+      '@components': path.resolve(__dirname, './src/components')
     }
   },
   esbuild: {
@@ -18,11 +18,20 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist-ui',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        desktop: path.resolve(__dirname, 'desktop.html')
+      }
+    }
   },
   server: {
     port: 3000,
-    host: true
+    host: true,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8'
+    }
   },
   base: './',
   define: {

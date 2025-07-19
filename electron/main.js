@@ -9,12 +9,12 @@ function createWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
   
-  // 圆形桌宠窗口尺寸 - 更小更圆润
-  const windowSize = 160; // 进一步缩小窗口
+  // 圆形桌宠窗口尺寸 - 调整为合适大小
+  const windowSize = 200; // 增加窗口大小以适应神宠
   
   // 计算右下角位置 (留出一些边距)
-  const x = screenWidth - windowSize - 20;
-  const y = screenHeight - windowSize - 20;
+  const x = screenWidth - windowSize - 50;
+  const y = screenHeight - windowSize - 50;
 
   // 创建圆形桌宠窗口 - 豆包风格圆润设计
   mainWindow = new BrowserWindow({
@@ -39,26 +39,44 @@ function createWindow() {
 
   // 加载应用
   if (isDev) {
-    // 在开发环境下尝试多个端口
+    console.log('🔧 Development mode detected, loading desktop app...');
+    // 开发环境：直接加载桌面版
     const tryLoadURL = async () => {
-      const ports = [3000, 3001, 3002, 3003, 3004, 3005];
+      const ports = [3000, 3001, 3003, 3002, 3004, 3005]; // 优先3000端口
+      console.log('🔍 Starting URL loading sequence...');
       for (const port of ports) {
         try {
-          const url = `http://localhost:${port}`;
-          console.log(`🔍 Trying to load: ${url}`);
+          const url = `http://localhost:${port}/bowl-desktop.html`;
+          console.log(`🔍 Trying to load desktop app from: ${url}`);
           await mainWindow.loadURL(url);
-          console.log(`✅ Successfully loaded: ${url}`);
-          break;
+          console.log(`✅ Desktop app successfully loaded from: ${url}`);
+          
+          // 确认加载完成
+          mainWindow.webContents.once('did-finish-load', () => {
+            console.log('🎨 Desktop UI loaded and ready');
+          });
+          
+          return; // 成功加载
         } catch (error) {
-          console.log(`❌ Failed to load port ${port}: ${error.message}`);
+          console.log(`❌ Failed to load from port ${port}: ${error.message}`);
           continue;
         }
       }
+      
+      // 如果所有端口都失败，加载主页面
+      console.log(`⚠️ All desktop.html attempts failed, loading main page`);
+      try {
+        await mainWindow.loadURL(`http://localhost:3000`);
+        console.log(`📱 Loaded main page as fallback`);
+      } catch (fallbackError) {
+        console.log(`❌ Even fallback failed: ${fallbackError.message}`);
+      }
     };
     tryLoadURL();
-    // 开发环境下打开开发者工具
+    // 启用开发者工具来调试
     mainWindow.webContents.openDevTools();
   } else {
+    console.log('📦 Production mode detected, loading built files...');
     mainWindow.loadFile(path.join(__dirname, '../dist-ui/index.html'));
   }
 

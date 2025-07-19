@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神宠系统 - 一碗四态 (桌面版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            overflow: hidden;
+            user-select: none;
+            -webkit-app-region: drag;
+        }
+        
+        .no-drag {
+            -webkit-app-region: no-drag;
+        }
+        
+        .pet-bowl {
+            transition: all 0.3s ease;
+        }
+        
+        .pet-bowl:hover {
+            transform: scale(1.05);
+        }
+        
+        .pet-bowl.active {
+            transform: scale(1.1);
+        }
+        
+        .pet-bowl.control {
+            transform: scale(1.05) rotate(5deg);
+        }
+        
+        .menu-enter {
+            animation: slideIn 0.2s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="w-full h-screen flex items-center justify-center">
+        <!-- 状态指示器 -->
+        <div id="statusIndicator" class="absolute top-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm font-medium no-drag">
+            静碗
+        </div>
+
+        <!-- 主碗容器 -->
+        <div class="relative no-drag">
+            <div id="petBowl" 
+                 class="pet-bowl w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 shadow-xl hover:shadow-2xl cursor-pointer select-none flex items-center justify-center text-white text-4xl font-bold">
+                🥣
+            </div>
+
+            <!-- 感应碗菜单 (hover) -->
+            <div id="hoverMenu" class="absolute bottom-full mb-4 left-1/2 transform -translate-x-1/2 hidden">
+                <div class="flex gap-2 p-3 bg-white bg-opacity-95 backdrop-blur-sm rounded-xl shadow-lg">
+                    <button class="px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200 cursor-pointer select-none bg-transparent text-gray-700 hover:bg-gray-100" onclick="handleAction('播放')">播放</button>
+                    <button class="px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200 cursor-pointer select-none bg-transparent text-gray-700 hover:bg-gray-100" onclick="handleAction('暂停')">暂停</button>
+                    <button class="px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200 cursor-pointer select-none bg-transparent text-gray-700 hover:bg-gray-100" onclick="handleAction('快进')">快进</button>
+                    <button class="px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200 cursor-pointer select-none bg-transparent text-gray-700 hover:bg-gray-100" onclick="handleAction('快退')">快退</button>
+                    <button class="px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200 cursor-pointer select-none bg-transparent text-gray-700 hover:bg-gray-100" onclick="handleAction('语速+')">语速+</button>
+                </div>
+            </div>
+
+            <!-- 唤醒碗菜单 (left click) -->
+            <div id="leftMenu" class="absolute top-full mt-4 left-1/2 transform -translate-x-1/2 hidden">
+                <div class="w-52 p-3 bg-white rounded-xl shadow-lg grid grid-cols-2 gap-2">
+                    <button class="px-4 py-2 text-base rounded-md font-medium transition-all duration-200 cursor-pointer select-none border border-gray-300 bg-white text-gray-700 hover:bg-gray-50" onclick="handleAction('截图')">截图</button>
+                    <button class="px-4 py-2 text-base rounded-md font-medium transition-all duration-200 cursor-pointer select-none border border-gray-300 bg-white text-gray-700 hover:bg-gray-50" onclick="handleAction('复制')">复制</button>
+                    <button class="px-4 py-2 text-base rounded-md font-medium transition-all duration-200 cursor-pointer select-none border border-gray-300 bg-white text-gray-700 hover:bg-gray-50" onclick="handleAction('记要')">记要</button>
+                    <button class="px-4 py-2 text-base rounded-md font-medium transition-all duration-200 cursor-pointer select-none border border-gray-300 bg-white text-gray-700 hover:bg-gray-50" onclick="handleAction('投屏')">投屏</button>
+                </div>
+            </div>
+
+            <!-- 控制碗菜单 (right click) -->
+            <div id="rightMenu" class="absolute left-full ml-4 top-1/2 transform -translate-y-1/2 hidden">
+                <div class="w-56 p-3 bg-gray-900 text-white rounded-xl shadow-xl grid grid-cols-2 gap-2">
+                    <button class="px-4 py-2 text-base rounded-md font-medium transition-all duration-200 cursor-pointer select-none bg-transparent text-white hover:bg-gray-800" onclick="handleAction('换肤')">换肤</button>
+                    <button class="px-4 py-2 text-base rounded-md font-medium transition-all duration-200 cursor-pointer select-none bg-transparent text-white hover:bg-gray-800" onclick="handleAction('AI对话')">AI对话</button>
+                    <button class="px-4 py-2 text-base rounded-md font-medium transition-all duration-200 cursor-pointer select-none bg-transparent text-white hover:bg-gray-800" onclick="handleAction('网页')">网页</button>
+                    <button class="px-4 py-2 text-base rounded-md font-medium transition-all duration-200 cursor-pointer select-none bg-transparent text-white hover:bg-gray-800" onclick="handleAction('控制面板')">控制面板</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 点击其他区域隐藏菜单 -->
+        <div id="overlay" class="fixed inset-0 z-0 hidden" onclick="resetToIdle()"></div>
+    </div>
+
+    <script>
+        let currentMode = 'idle';
+        let autoHideTimer = null;
+
+        const statusIndicator = document.getElementById('statusIndicator');
+        const petBowl = document.getElementById('petBowl');
+        const hoverMenu = document.getElementById('hoverMenu');
+        const leftMenu = document.getElementById('leftMenu');
+        const rightMenu = document.getElementById('rightMenu');
+        const overlay = document.getElementById('overlay');
+
+        // 状态文本映射
+        const statusTexts = {
+            idle: '静碗',
+            hover: '感应碗',
+            left: '唤醒碗',
+            right: '控制碗'
+        };
+
+        // 更新状态显示
+        function updateStatus(mode) {
+            currentMode = mode;
+            statusIndicator.textContent = statusTexts[mode];
+            
+            // 更新碗的样式
+            petBowl.className = 'pet-bowl w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 shadow-xl hover:shadow-2xl cursor-pointer select-none flex items-center justify-center text-white text-4xl font-bold';
+            
+            if (mode === 'left') {
+                petBowl.classList.add('active');
+            } else if (mode === 'right') {
+                petBowl.classList.add('control');
+            }
+            
+            console.log(`🍚 状态切换: ${mode}`);
+        }
+
+        // 隐藏所有菜单
+        function hideAllMenus() {
+            hoverMenu.classList.add('hidden');
+            leftMenu.classList.add('hidden');
+            rightMenu.classList.add('hidden');
+            overlay.classList.add('hidden');
+        }
+
+        // 重置到静碗状态
+        function resetToIdle() {
+            hideAllMenus();
+            updateStatus('idle');
+            
+            if (autoHideTimer) {
+                clearTimeout(autoHideTimer);
+                autoHideTimer = null;
+            }
+        }
+
+        // 设置自动隐藏定时器
+        function setAutoHide() {
+            if (autoHideTimer) {
+                clearTimeout(autoHideTimer);
+            }
+            
+            autoHideTimer = setTimeout(() => {
+                resetToIdle();
+            }, 3000);
+        }
+
+        // 鼠标悬浮 - 感应碗
+        petBowl.addEventListener('mouseenter', () => {
+            if (currentMode === 'idle') {
+                updateStatus('hover');
+                hideAllMenus();
+                hoverMenu.classList.remove('hidden');
+                hoverMenu.classList.add('menu-enter');
+            }
+        });
+
+        // 鼠标离开
+        petBowl.addEventListener('mouseleave', () => {
+            if (currentMode === 'hover') {
+                setTimeout(() => {
+                    if (currentMode === 'hover' && !hoverMenu.matches(':hover')) {
+                        resetToIdle();
+                    }
+                }, 300);
+            }
+        });
+
+        // 左键点击 - 唤醒碗
+        petBowl.addEventListener('click', (e) => {
+            e.preventDefault();
+            updateStatus('left');
+            hideAllMenus();
+            leftMenu.classList.remove('hidden');
+            leftMenu.classList.add('menu-enter');
+            overlay.classList.remove('hidden');
+            setAutoHide();
+        });
+
+        // 右键点击 - 控制碗
+        petBowl.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            updateStatus('right');
+            hideAllMenus();
+            rightMenu.classList.remove('hidden');
+            rightMenu.classList.add('menu-enter');
+            overlay.classList.remove('hidden');
+            setAutoHide();
+        });
+
+        // 处理菜单动作
+        function handleAction(action) {
+            console.log(`🍚 执行动作: ${action}`);
+            
+            // 通知Electron主进程
+            if (window.electronAPI) {
+                window.electronAPI.petStateChange({
+                    action: action,
+                    state: currentMode,
+                    timestamp: Date.now()
+                });
+            }
+            
+            // 模拟动作执行
+            switch (action) {
+                case "播放":
+                    console.log("▶️ 开始播放");
+                    break;
+                case "暂停":
+                    console.log("⏸️ 暂停播放");
+                    break;
+                case "快进":
+                    console.log("⏩ 快进");
+                    break;
+                case "快退":
+                    console.log("⏪ 快退");
+                    break;
+                case "语速+":
+                    console.log("🚀 提高语速");
+                    break;
+                case "截图":
+                    console.log("📸 截图");
+                    break;
+                case "复制":
+                    console.log("📋 复制");
+                    break;
+                case "记要":
+                    console.log("📝 记要");
+                    break;
+                case "投屏":
+                    console.log("📺 投屏");
+                    break;
+                case "换肤":
+                    console.log("🎨 换肤");
+                    break;
+                case "AI对话":
+                    console.log("🤖 AI对话");
+                    break;
+                case "网页":
+                    console.log("🌐 网页");
+                    break;
+                case "控制面板":
+                    console.log("⚙️ 控制面板");
+                    break;
+            }
+        }
+
+        // 初始化
+        console.log('🚀 神宠系统 - 一碗四态已启动');
+        updateStatus('idle');
+    </script>
+</body>
+</html>
